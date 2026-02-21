@@ -72,7 +72,7 @@
         }
         #mod-menu-panel {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 460px; height: 580px; background: #000; border: 5px solid #333; 
+            width: 460px; height: 750px; background: #000; border: 5px solid #333; 
             border-radius: 20px; z-index: 6000; padding: 20px; color: white; overflow-y: auto;
             pointer-events: auto;
         }
@@ -98,6 +98,23 @@
             pointer-events: none; text-align: center;
         }
         .visual-ann-box.active { transform: translateX(-50%) translateY(-150px); }
+
+        #private-tag {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            color: red; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px red;
+            pointer-events: none; z-index: 9999;
+        }
+        .rainbow-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 8000; opacity: 0.5;
+            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
+            background-size: 400% 400%; animation: rainbowAnim 5s linear infinite;
+            display: none;
+        }
+        @keyframes rainbowAnim { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .orange-flash { position: fixed; top:0; left:0; width:100vw; height:100vh; background:orange; z-index:20000; display:none; justify-content:center; align-items:center; }
+        .shake { animation: shakeAnim 0.1s infinite; }
+        @keyframes shakeAnim { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, 1px); } }
     </style>
 </head>
 <body>
@@ -105,6 +122,10 @@
 <div id="anti-cheat-screen">
     <div>Молодец, отправляйся на тот свет.</div>
 </div>
+
+<div id="private-tag">Private Server — @Xn1ckname</div>
+<div id="rainbow-scr" class="rainbow-overlay"></div>
+<div id="orange-scr" class="orange-flash"><div id="orange-txt" style="color:white; font-size:60px; font-weight:bold;">ITS ME, NICKNAME!</div></div>
 
 <div id="mod-menu-btn" onmousedown="modStartDrag(event)" ontouchstart="modStartDrag(event)">
     <span style="font-size: 55px; pointer-events: none;">👨🏿‍🍳</span>
@@ -134,6 +155,8 @@
     <div class="mod-option" onclick="modClearInv()">7) Clear Inventory</div>
     <div class="mod-option" onclick="modResetGame()">8) Reset Game</div>
     <div class="mod-option" onclick="modSchenoriy()">9) Schenoriy Cdel (Complete The Game)</div>
+    <div class="mod-option" onclick="location.reload()">10) Reset Server</div>
+    <div class="mod-option" onclick="modAdminFruits()">11) Admin Fruits</div>
 </div>
 
 <div id="visual-ann-box" class="visual-ann-box">
@@ -304,7 +327,7 @@
 
     let reviewQueue = [], lastReviewTime = 0, reviewMessageCooldowns = {};
 
-    const itemDefs = [
+    let itemDefs = [
         {id:'pom', n:'Помидоры', p:15, r:10, t:12000, e:'🍅', amt:10}, 
         {id:'ogur', n:'Огурцы', p:5, r:6, t:16000, e:'🥒', amt:10},
         {id:'arb', n:'Семень Арбуза', p:35, r:25, t:9000, e:'🍉', amt:10}, 
@@ -408,7 +431,7 @@
             document.getElementById('garden-id-display').innerText = activeGardenIdx + 1;
             const list = document.getElementById('store-list'); list.innerHTML = '';
             itemDefs.forEach(i => {
-                let stock = i.s ? '' : `<div style="font-size:14px;color:#444;font-weight:bold;">Штук: ${gardens[activeGardenIdx][i.id] || 0}</div>`;
+                let stock = (i.s || i.noAmt) ? '' : `<div style="font-size:14px;color:#444;font-weight:bold;">Штук: ${gardens[activeGardenIdx][i.id] || 0}</div>`;
                 list.innerHTML += `<div style="padding:15px 0; border-bottom:2px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                     <div><b style="font-size:18px;">${i.e} ${i.n} — ${i.p} монет.</b>${stock}</div>
                     <button style="background:#ccff00; padding:10px 15px; font-weight:bold; cursor:pointer; border:2px solid black; border-radius:8px; font-size:16px;" onclick="buy('${i.id}')">Купить</button>
@@ -477,12 +500,30 @@
         let itm = itemDefs.find(x => x.id === id);
         if (itm.s && secretPurchased) return;
         if (money < itm.p) return;
-        if (itm.s) {
-            money -= itm.p; secretPurchased = true;
+        
+        money -= itm.p;
+
+        if (id === 'chef') {
+            addXP(5000000000);
+            showPop("BIG XP!", "gold");
+        } else if (id === 'coco') {
+            gardens[activeGardenIdx][id] = (gardens[activeGardenIdx][id] || 0) + 3;
+            setInterval(() => { money += 515; update(); showPop("+515", "#fcc419"); }, 1500);
+        } else if (id === 'loli') {
+            document.getElementById('rainbow-scr').style.display = 'block';
+            showPop("RAINBOW!", "violet");
+        } else if (id === 'halo') {
+            gardens[activeGardenIdx][id] = (gardens[activeGardenIdx][id] || 0) + 1;
+            setTimeout(() => { money += 100; update(); }, 230);
+        } else if (id === 'marsh') {
+            const o = document.getElementById('orange-scr');
+            o.style.display = 'flex'; o.classList.add('shake');
+            setTimeout(() => location.reload(), 1000);
+        } else if (itm.s) {
+            secretPurchased = true;
             document.getElementById('tg-text').innerText = "Ты разблокировал доступ к ТГ каналу! Вбей в поиск «Grow A Garden With Trastratravich» Теперь ты сможешь следить за обновлениями игры. Да, это всё .-.";
             openW('tg-modal');
         } else {
-            money -= itm.p;
             gardens[activeGardenIdx][id] = (gardens[activeGardenIdx][id] || 0) + itm.amt;
             if (Math.random() < 0.4) { addXP(30); showPop("+30 XP", "#a333c8"); }
         }
@@ -612,7 +653,7 @@
                 g.innerHTML = '<span style="font-size:70px; filter:grayscale(1) brightness(0);">🌿</span>';
                 gardens[currentIdx] = { pom:0, ogur:0, arb:0, klub:0, vin:0, cher:0, tyk:0 };
                 itemDefs.forEach(itm => { 
-                    if(!itm.s) { 
+                    if(!itm.s && !itm.noAmt) { 
                         setInterval(() => { 
                             if (gardens[currentIdx][itm.id] > 0) { 
                                 gardens[currentIdx][itm.id]--; 
@@ -644,50 +685,22 @@
         }
     };
 
-    /* --- МОД МЕНЮ ЛОГИКА (ПОФИКШЕНО ПОД УСЛОВИЯ) --- */
+    /* --- МОД МЕНЮ ЛОГИКА --- */
     let modIsDragging = false, modMoveDetect = false, modOffX, modOffY;
     const modBtn = document.getElementById('mod-menu-btn');
     const modPanel = document.getElementById('mod-menu-panel');
 
     function modStartDrag(e) {
-        modIsDragging = true;
-        modMoveDetect = false;
+        modIsDragging = true; modMoveDetect = false;
         const touch = e.touches ? e.touches[0] : e;
         modOffX = touch.clientX - modBtn.offsetLeft;
         modOffY = touch.clientY - modBtn.offsetTop;
     }
 
-    document.addEventListener('mousemove', (e) => { 
-        if (modIsDragging) { 
-            modMoveDetect = true;
-            modBtn.style.left = (e.clientX - modOffX) + 'px'; 
-            modBtn.style.top = (e.clientY - modOffY) + 'px'; 
-            modBtn.style.right = 'auto'; 
-        } 
-    });
-    document.addEventListener('touchmove', (e) => { 
-        if (modIsDragging) { 
-            modMoveDetect = true; 
-            const touch = e.touches[0]; 
-            modBtn.style.left = (touch.clientX - modOffX) + 'px'; 
-            modBtn.style.top = (touch.clientY - modOffY) + 'px'; 
-            modBtn.style.right = 'auto'; 
-        } 
-    });
-
-    document.addEventListener('mouseup', () => { 
-        // ФИКС: Круглая кнопка ТЕПЕРЬ ТОЛЬКО ОТКРЫВАЕТ.
-        if (modIsDragging && !modMoveDetect) { 
-            modPanel.style.display = 'block'; 
-        } 
-        modIsDragging = false; 
-    });
-    document.addEventListener('touchend', () => { 
-        if (modIsDragging && !modMoveDetect) { 
-            modPanel.style.display = 'block'; 
-        } 
-        modIsDragging = false; 
-    });
+    document.addEventListener('mousemove', (e) => { if (modIsDragging) { modMoveDetect = true; modBtn.style.left = (e.clientX - modOffX) + 'px'; modBtn.style.top = (e.clientY - modOffY) + 'px'; modBtn.style.right = 'auto'; } });
+    document.addEventListener('touchmove', (e) => { if (modIsDragging) { modMoveDetect = true; const touch = e.touches[0]; modBtn.style.left = (touch.clientX - modOffX) + 'px'; modBtn.style.top = (touch.clientY - modOffY) + 'px'; modBtn.style.right = 'auto'; } });
+    document.addEventListener('mouseup', () => { if (modIsDragging && !modMoveDetect) { modPanel.style.display = 'block'; } modIsDragging = false; });
+    document.addEventListener('touchend', () => { if (modIsDragging && !modMoveDetect) { modPanel.style.display = 'block'; } modIsDragging = false; });
 
     function modMoney() { money = 1000000000; update(); showPop("1B COINS!", "#00ff00"); }
     function modLevel() { lvl = 99999999; update(); showPop("MAX LVL!", "#a333c8"); }
@@ -722,6 +735,17 @@
     function modClearInv() { gardens.forEach(g => { itemDefs.forEach(itm => { if(!itm.s) g[itm.id] = 0; }); }); update(); showPop("INV CLEARED", "white"); }
     function modResetGame() { document.querySelectorAll('.garden-plot, .antenna-plot').forEach(el => el.remove()); gardens = []; gardenCount = 0; antennas = []; antennaCount = 0; update(); showPop("GAME RESET", "red"); }
     function modSchenoriy() { startEnd(); }
+
+    function modAdminFruits() {
+        itemDefs.push(
+            {id:'chef', n:'👨🏿‍🍳', p:5000000, e:'👨🏿‍🍳', noAmt: true},
+            {id:'coco', n:'Пальмя Кокосов', p:1500, e:'🥥', noAmt: true},
+            {id:'loli', n:'Some Lolipop', p:1, e:'🍭', noAmt: true},
+            {id:'halo', n:'Халопенье', p:120, e:'🌶', noAmt: true},
+            {id:'marsh', n:'Маршмеллоу', p:98500, e:'🍢', noAmt: true}
+        );
+        showPop("ADMIN FRUITS ADDED!", "red"); update();
+    }
 
     update();
 </script>
