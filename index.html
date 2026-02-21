@@ -74,6 +74,7 @@
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 460px; height: 580px; background: #000; border: 5px solid #333; 
             border-radius: 20px; z-index: 6000; padding: 20px; color: white; overflow-y: auto;
+            pointer-events: auto; /* Важно: разрешаем события внутри */
         }
         .mod-title { 
             color: #ff0000; text-align: center; font-size: 18px; margin-bottom: 20px; 
@@ -110,8 +111,8 @@
     <span style="pointer-events: none; margin-top: -5px;">MOD MENU</span>
 </div>
 
-<div id="mod-menu-panel">
-    <div class="close-x" style="position: absolute; top: 10px; right: 10px; width: 45px; height: 45px; font-size: 28px;" onclick="event.stopPropagation(); document.getElementById('mod-menu-panel').style.display='none'">×</div>
+<div id="mod-menu-panel" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+    <div class="close-x" style="position: absolute; top: 10px; right: 10px; width: 45px; height: 45px; font-size: 28px;" onclick="document.getElementById('mod-menu-panel').style.display='none'">×</div>
     <div class="mod-title">Grow A Garden With Trastratravich 1.5 🍭 <br> Made By: @Xn1ckname</div>
     
     <div class="mod-option" onclick="modMoney()">1) Infinity Money</div>
@@ -642,7 +643,7 @@
         }
     };
 
-    /* --- МОД МЕНЮ ЛОГИКА --- */
+    /* --- МОД МЕНЮ ЛОГИКА (ПОФИКШЕНО) --- */
     let modIsDragging = false, modMoveDetect = false, modOffX, modOffY;
     const modBtn = document.getElementById('mod-menu-btn');
     const modPanel = document.getElementById('mod-menu-panel');
@@ -655,9 +656,26 @@
         modOffY = touch.clientY - modBtn.offsetTop;
     }
 
-    document.addEventListener('mousemove', (e) => { if (modIsDragging) { modMoveDetect = true; modBtn.style.left = (e.clientX - modOffX) + 'px'; modBtn.style.top = (e.clientY - modOffY) + 'px'; modBtn.style.right = 'auto'; } });
-    document.addEventListener('touchmove', (e) => { if (modIsDragging) { modMoveDetect = true; const touch = e.touches[0]; modBtn.style.left = (touch.clientX - modOffX) + 'px'; modBtn.style.top = (touch.clientY - modOffY) + 'px'; modBtn.style.right = 'auto'; } });
+    document.addEventListener('mousemove', (e) => { 
+        if (modIsDragging) { 
+            modMoveDetect = true; // Если пошевелили — это перетаскивание
+            modBtn.style.left = (e.clientX - modOffX) + 'px'; 
+            modBtn.style.top = (e.clientY - modOffY) + 'px'; 
+            modBtn.style.right = 'auto'; 
+        } 
+    });
+    document.addEventListener('touchmove', (e) => { 
+        if (modIsDragging) { 
+            modMoveDetect = true; 
+            const touch = e.touches[0]; 
+            modBtn.style.left = (touch.clientX - modOffX) + 'px'; 
+            modBtn.style.top = (touch.clientY - modOffY) + 'px'; 
+            modBtn.style.right = 'auto'; 
+        } 
+    });
+
     document.addEventListener('mouseup', () => { 
+        // Если мы НЕ двигали кнопку (простой клик)
         if (modIsDragging && !modMoveDetect) { 
             modPanel.style.display = (modPanel.style.display === 'block' ? 'none' : 'block'); 
         } 
@@ -669,10 +687,6 @@
         } 
         modIsDragging = false; 
     });
-
-    // Остановка всплытия события клика внутри панели, чтобы она не закрывалась сама при нажатии на опции
-    modPanel.addEventListener('mousedown', (e) => e.stopPropagation());
-    modPanel.addEventListener('touchstart', (e) => e.stopPropagation());
 
     function modMoney() { money = 1000000000; update(); showPop("1B COINS!", "#00ff00"); }
     function modLevel() { lvl = 99999999; update(); showPop("MAX LVL!", "#a333c8"); }
