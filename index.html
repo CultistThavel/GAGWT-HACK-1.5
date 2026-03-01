@@ -2,752 +2,1343 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Grow a Garden with Trastratravich: @Xn1ckname EDITION 1.6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Purple Battleground 1.6 - PERFECT BALANCE</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Arial Black', sans-serif; user-select: none; }
-        #game-screen { width: 100vw; height: 100vh; background-color: #82c91e; position: relative; transition: opacity 2s; }
-        .ui-header { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
-        .title-box { background: white; padding: 15px 25px; border-radius: 15px; border: 4px solid #ccc; font-weight: bold; font-size: 22px; pointer-events: auto; box-shadow: 0 6px 0 #bbb; }
-        #garden-hint-text { color: #555; font-size: 14px; font-family: Arial, sans-serif; margin-top: 5px; display: none; }
-        .stats-column { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: auto; }
-        .white-plate { background: white; padding: 12px 30px; border-radius: 20px; border: 4px solid #ccc; display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 30px; box-shadow: 0 6px 0 #bbb; }
-        .lvl-plate { background: #a333c8; color: white; border: 3px solid #7a2099; padding: 8px 15px; font-size: 18px; border-radius: 10px; }
-        .xp-container { width: 280px; height: 40px; background: #cccccc; border: 4px solid #444; border-radius: 12px; position: relative; overflow: hidden; }
-        #xp-fill { height: 100%; width: 0%; background: #33e0ff; position: absolute; z-index: 1; transition: width 0.5s; }
-        #xp-text { position: absolute; width: 100%; text-align: center; line-height: 40px; font-weight: bold; font-size: 18px; z-index: 10; color: black; }
-        .coin-icon { width: 35px; height: 35px; background: #fcc419; border: 3px solid #f08c00; border-radius: 50%; position: relative; }
-        .coin-icon::after { content: '◆'; color: white; font-size: 20px; position: absolute; top: 1px; left: 8px; }
-        .side-menu { position: absolute; right: 30px; top: 55%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 25px; z-index: 100; }
-        .circle-btn { width: 110px; height: 110px; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; border-radius: 25px; box-shadow: 0 10px 0 rgba(0,0,0,0.3); transition: transform 0.1s; position: relative; }
-        .circle-btn:active { transform: translateY(5px); box-shadow: 0 5px 0 rgba(0,0,0,0.3); }
-        .btn-p { background: #b197fc; }
-        .btn-b { background: #1a0dab; }
-        .btn-r { background: #ff4d4d; }
-        
-        .msg-icon { width: 50px; height: 40px; background: white; border-radius: 8px; position: relative; }
-        .msg-icon::after { content: ''; position: absolute; bottom: -12px; left: 10px; border-left: 12px solid white; border-bottom: 12px solid transparent; }
-        .msg-lines { display: flex; flex-direction: column; gap: 4px; padding: 8px; }
-        .msg-line { height: 4px; background: #ff4d4d; border-radius: 2px; width: 100%; }
-        .msg-line.short { width: 60%; }
+        body, html { margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#3d4147;font-family:'Arial Black',sans-serif;user-select:none;touch-action:manipulation; }
+        #game-container { position:relative;width:100vw;height:100vh;cursor:crosshair;transition:filter 0.2s ease; }
+        #floor { position:absolute;bottom:0;width:100%;height:40%;background:#60646b;border-top:12px solid #000;z-index:10; }
 
-        .notif-badge { position: absolute; top: -5px; left: -5px; background: red; color: white; border: 3px solid white; border-radius: 50%; width: 35px; height: 35px; font-size: 18px; display: none; justify-content: center; align-items: center; z-index: 10; }
-        .dots-circ { width: 80px; height: 80px; border: 6px solid white; border-radius: 50%; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .dot { width: 14px; height: 14px; background: white; border-radius: 50%; }
-        .modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; z-index: 500; width: 480px; border-radius: 30px; border: 6px solid #ccc; box-shadow: 0 0 100px rgba(0,0,0,0.5); }
-        .close-x { position: absolute; top: -20px; right: -20px; width: 65px; height: 65px; background: #fcc419; border: 5px solid white; border-radius: 50%; color: white; cursor: pointer; font-weight: bold; display: flex; justify-content: center; align-items: center; font-size: 40px; box-shadow: 0 6px 0 #bbb; }
-        #admin-cube { display: none; position: absolute; top: 20px; right: 20px; width: 100px; height: 100px; background: black; color: white; font-size: 14px; text-align: center; border: 4px solid white; cursor: move; z-index: 2000; align-items: center; justify-content: center; padding: 5px; box-sizing: border-box; }
-        .admin-modal { background: black !important; color: white !important; border: 6px solid #444 !important; }
-        .admin-btn { background: #222; color: #00ff00; border: 3px solid white; padding: 15px; width: 100%; margin: 10px 0; cursor: pointer; font-family: monospace; text-align: left; font-size: 16px; }
-        .admin-input { width: 93%; background: #111; border: 2px solid #00ff00; color: #00ff00; padding: 10px; font-family: monospace; margin-top: 10px; font-size: 16px; }
-        .confirm-btn { background: #00ff00; color: black; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 5px; border-radius: 5px; }
-        #global-announcement { display: none; position: absolute; bottom: 200px; left: 50%; transform: translateX(-50%) translateY(100px); width: 85%; min-height: 120px; background: white; border: 8px solid #000; border-radius: 30px; padding: 30px; z-index: 3000; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #global-announcement.show { display: block; transform: translateX(-50%) translateY(0); }
-        .owner-tag { position: absolute; top: -25px; left: 30px; background: #000; color: #fff; padding: 8px 25px; border-radius: 15px; font-size: 18px; }
-        .popup { position: absolute; font-weight: bold; animation: floatUp 1s forwards; z-index: 5000; font-size: 45px; pointer-events: none; text-shadow: 3px 3px 0 white; }
-        @keyframes floatUp { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-150px); } }
-        .garden-plot, .antenna-plot { position: absolute; width: 140px; height: 140px; border: 6px solid white; transform: translate(-50%, -50%); cursor: pointer; background: rgba(255,255,255,0.3); display: flex; justify-content: center; align-items: center; border-radius: 20px; }
-        .garden-plot span, .antenna-plot span { font-size: 90px !important; }
-        #placement-hint { display: none; position: absolute; bottom: 250px; left: 50%; transform: translateX(-50%); background: white; padding: 20px 40px; border-radius: 20px; border: 6px solid #000; font-weight: bold; font-size: 24px; z-index: 1000; text-align: center; box-shadow: 0 10px 0 #ddd; color: black; max-width: 80%; }
-        #ending { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 10000; color: white; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 35px; padding: 40px; line-height: 1.6; transition: opacity 3s; opacity: 0; box-sizing: border-box; }
-        button { font-size: 18px !important; }
-        #anti-cheat-screen { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 20000; justify-content: center; align-items: center; color: red; font-size: 50px; font-weight: bold; text-align: center; flex-direction: column; }
-        
-        #robbery-alert { display: none; position: absolute; top: -400px; left: 50%; transform: translateX(-50%); width: 500px; background: white; border: 8px solid #ff4d4d; border-radius: 25px; padding: 20px; z-index: 4000; transition: top 0.8s cubic-bezier(0.6, -0.28, 0.735, 0.045); box-shadow: 0 20px 0 rgba(0,0,0,0.2); }
-        .robbery-btn { background: #82c91e; color: black; border: 4px solid #69a018; padding: 15px; width: 100%; border-radius: 15px; font-weight: bold; font-size: 22px; cursor: pointer; margin-top: 15px; box-shadow: 0 5px 0 #69a018; }
-        .robbery-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #69a018; }
-        .review-item { border-bottom: 2px solid #eee; padding: 10px 0; }
-        .lan-btn { background: #82c91e; color: black; border: none; padding: 15px 40px; font-weight: bold; border-radius: 15px; cursor: pointer; display: block; margin: 20px auto 0; font-size: 20px; }
-        
-        #robbery-timer { font-size: 30px; color: #ff4d4d; font-weight: bold; display: block; margin-top: 10px; }
-        .rep-dead-modal { text-align: center; border: 6px solid #ccc !important; }
-        .rep-btn-ok { background: #82c91e; color: white; border: none; padding: 15px 50px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 20px; }
+        .header-center { position:absolute;top:15px;left:5%;width:90%;display:flex;flex-direction:column;align-items:center;z-index:100;transition:opacity .5s,transform .5s; }
+        #title-box { background:#fff;border:8px solid #000;border-radius:20px;font-size:40px;width:100%;text-align:center;margin-bottom:10px;box-shadow:0 10px 0 #000; }
+        #hp-container { background:red;border:8px solid #000;border-radius:20px;padding:12px 0;width:85%;text-align:center;overflow:hidden;position:relative; }
+        #hp-fill { position:absolute;top:0;left:0;width:100%;height:100%;background:#ccff00;z-index:1;transition:width .4s cubic-bezier(.1,.7,1,.1); }
+        #hp-text { color:#fff;font-size:28px;text-shadow:2px 2px 0 #000;position:relative;z-index:2; }
 
-        /* --- MOD MENU STYLES --- */
-        #mod-menu-btn { 
-            position: absolute; top: 20px; right: 20px; width: 115px; height: 115px; 
-            background: #a333c8; border: 5px solid #fff; border-radius: 50%; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            cursor: pointer; z-index: 5000; font-size: 13px; font-weight: bold; box-shadow: 0 0 20px rgba(163, 51, 200, 0.6);
-            pointer-events: auto; color: white;
-        }
-        #mod-menu-panel {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 460px; height: 750px; background: #000; border: 5px solid #333; 
-            border-radius: 20px; z-index: 6000; padding: 20px; color: white; overflow-y: auto;
-            pointer-events: auto;
-        }
-        .mod-title { 
-            color: #ff0000; text-align: center; font-size: 18px; margin-bottom: 20px; 
-            text-shadow: 0 0 15px #ff0000; 
-            animation: modFlash 0.8s infinite alternate; 
-        }
-        @keyframes modFlash {
-            from { opacity: 1; text-shadow: 0 0 5px #ff0000; }
-            to { opacity: 0.6; text-shadow: 0 0 25px #ff0000, 0 0 40px #ff0000; }
-        }
-        .mod-option { 
-            background: #1a1a1a; border: 2px solid #333; padding: 15px; margin-bottom: 10px; 
-            border-radius: 10px; cursor: pointer; transition: 0.2s;
-        }
-        .mod-option:hover { background: #333; }
-        .mod-hint { font-size: 12px; color: #888; margin-top: 5px; }
-        .visual-ann-box {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
-            width: 85%; background: white; border: 5px solid black; border-radius: 20px 20px 0 0;
-            padding: 25px; z-index: 7000; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none; text-align: center;
-        }
-        .visual-ann-box.active { transform: translateX(-50%) translateY(-150px); }
+        .left-ui-panel { position:absolute;top:150px;left:30px;display:flex;flex-direction:column;gap:20px;z-index:100;transition:opacity .5s; }
+        #money-display { color:#fff;font-size:45px;text-shadow:4px 4px 0 #000; }
+        #shop-btn { width:180px;height:180px;background:#fff;border:10px solid #000;border-radius:35px;font-size:110px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:10px 10px 0 #000; }
 
-        #private-tag {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            color: red; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px red;
-            pointer-events: none; z-index: 9999;
+        .wave-ui { position:absolute;top:200px;right:40px;text-align:right;color:#fff;z-index:100;transition:opacity .5s; }
+        #wave-big { font-size:80px;margin:0;-webkit-text-stroke:3px #000; }
+        #enemies-count { font-size:24px;text-shadow:3px 3px 0 #000; }
+
+        #main-hare, #king-hare { position:absolute;bottom:25%;left:-20px;width:500px;z-index:50;transition:transform 0.2s ease, bottom 0.3s ease; }
+        #king-hare { display: none; } /* По умолчанию скрыт */
+        
+        #heli-hare { position:absolute;bottom:12%;left:180px;width:250px;z-index:60;display:none;animation:heliFly 1.8s infinite alternate ease-in-out; }
+
+        .zombie-container { position:absolute;bottom:25%;right:-500px;width:450px;z-index:45;display:flex;flex-direction:column;align-items:center; }
+        .zombie-hp-bar { width:90%;height:30px;background:red;border:5px solid #000;position:relative; }
+        .zombie-hp-fill { height:100%;background:#00ff00;width:100%;transition:width .3s; }
+        .zombie-name { color:#fff;font-size:24px;-webkit-text-stroke:1px #000;margin-bottom:5px;font-weight:900; }
+
+        #boss-ui-global { position:fixed;top:20px;left:50%;transform:translateX(-50%);width:80%;z-index:1000;display:none;flex-direction:column;align-items:center;transition:opacity 0.4s ease; }
+        #boss-hp-frame { width:100%;height:50px;background:#000;border:6px solid #fff;border-radius:10px;overflow:hidden; }
+        #boss-hp-fill { width:100%;height:100%;background:#00ff00;transition:width .3s; }
+        #boss-name-text { color:#fff;font-size:30px;margin-top:5px;text-shadow:3px 3px 0 #000; }
+
+        #tutorial-hint { position:fixed;top:300px;left:50%;transform:translateX(-50%);color:#fff;font-size:32px;text-shadow:2px 2px 0 #000;z-index:2000;display:none;text-align:center;width:80%;background:rgba(0,0,0,0.5);padding:20px;border-radius:20px;border:2px solid #fff; }
+
+        #red-screen-overlay { position:fixed;inset:0;background:rgba(255,0,0,0);z-index:9999;pointer-events:none;transition:background 0.2s ease; }
+        #white-flash { position:fixed;inset:0;background:#fff;z-index:10000;display:none;opacity:0;transition:opacity .5s; }
+        #sorcerer-alert, #king-alert { position:fixed;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);color:#0000ff;font-size:60px;font-weight:900;-webkit-text-stroke:2px #fff;z-index:200000;transition:transform .5s cubic-bezier(.175,.885,.32,1.275);pointer-events:none; }
+        #king-alert { color:#ff0000; text-shadow:0 0 20px #ff0000; }
+
+        .bullet { position:absolute;z-index:48;width:150px;pointer-events:none; }
+
+        #start-btn-ui { position:absolute;bottom:240px;right:60px;background:#ccff00;color:#fff;padding:35px 70px;border:8px solid #fff;border-radius:45px;font-size:45px;z-index:100;cursor:pointer;box-shadow:0 10px 0 #77aa00;transition:opacity .4s; text-shadow:3px 3px 0 #000; }
+        #admin-trigger { position:fixed;top:20px;left:85%;width:120px;height:120px;background:#000;border:6px solid #fff;color:#fff;display:none;justify-content:center;align-items:center;font-size:18px;cursor:pointer;z-index:100000;border-radius:20px;box-shadow:0 0 20px #fff; }
+        #admin-menu { position:fixed;top:10%;left:50%;transform:translateX(-50%);width:450px;background:rgba(0,0,0,.95);border:6px solid #fff;display:none;flex-direction:column;padding:20px;z-index:100001;color:#fff;border-radius:20px;opacity:0;transition:opacity .5s,transform .5s; }
+        #admin-menu.show { opacity:1;transform:translateX(-50%) translateY(0); }
+        .admin-btn { width:100%;padding:15px;margin:10px 0;background:#111;border:2px solid #fff;color:#fff;font-size:18px;cursor:pointer;font-weight:900;border-radius:10px; }
+        .king-icon, #sorcerer-icon { width:60px;height:60px;margin-right:15px;cursor:pointer;transition:filter .3s; border-radius:10px; }
+        .king-icon:hover, #sorcerer-icon:hover { filter:drop-shadow(0 0 15px #ff0); }
+        .king-icon:hover { filter:drop-shadow(0 0 15px #f00); }
+
+        #subtitle-box { position:fixed;bottom:50px;left:50%;transform:translateX(-50%) translateY(300px);width:85%;background:#fff;border:8px solid #000;padding:25px;z-index:9000;transition:transform .5s;border-radius:15px;display:none; }
+        #subtitle-box.active { transform:translateX(-50%) translateY(0); }
+        #sub-name { position:absolute;top:-35px;left:20px;background:#000;color:#fff;padding:5px 20px;font-size:22px; }
+        #sub-text { font-size:32px;color:#000;font-weight:bold; }
+
+        #lose-screen { position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10000;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center; }
+        #final-credits { position:fixed;inset:0;background:#fff;z-index:2000000;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center; }
+        .credit-line { font-size:45px;color:#000;margin:20px;opacity:0;transition:opacity 1.5s;font-weight:900; }
+
+        @keyframes floatPurp { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-40px); } }
+        @keyframes shake { 0% { transform:translate(1px,1px) rotate(0deg); } 10% { transform:translate(-1px,-2px) rotate(-1deg); } 100% { transform:translate(1px,-2px) rotate(-1deg); } }
+        @keyframes glowGreen { from { text-shadow:0 0 5px #0f0; } to { text-shadow:0 0 20px #0f0,0 0 35px #0f0; } }
+        @keyframes glowYellow { from { text-shadow:0 0 10px #ff0; } to { text-shadow:0 0 30px #ff0,0 0 50px #ff0; } }
+        @keyframes glowRed { from { text-shadow:0 0 10px #f00; } to { text-shadow:0 0 30px #f00,0 0 50px #f00; } }
+        @keyframes heliFly { 0% { transform:translateY(0); } 100% { transform:translateY(-35px); } }
+        @keyframes floatBlueBall { 0% { transform:translate(0,0); } 20% { transform:translate(200px, -100px); } 40% { transform:translate(500px, 50px); } 60% { transform:translate(300px, 150px); } 80% { transform:translate(600px, -50px); } 100% { transform:translate(100px, 100px); } }
+        @keyframes redBallSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        @keyframes dash { 0% { bottom:25%; } 50% { bottom:45%; } 100% { bottom:25%; } }
+        @keyframes charge { 0% { transform:scale(1); } 100% { transform:scale(2); } }
+        @keyframes explosion { 0% { transform:scale(0); opacity:1; } 50% { transform:scale(10); opacity:1; } 100% { transform:scale(0); opacity:0; } }
+        @keyframes slowFloat { 0% { transform:translateY(0); } 50% { transform:translateY(-20px); } 100% { transform:translateY(0); } }
+
+        #ability-container { position:absolute;bottom:-200px;left:50%;transform:translateX(-50%);display:none;gap:40px;z-index:100;transition:bottom .6s,opacity .6s; }
+        #ability-container.active { bottom:160px;opacity:1; }
+        .ability-cube { width:180px;height:180px;background:rgba(0,0,0,.7);border:6px solid #fff;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;cursor:pointer;position:relative;border-radius:20px; backdrop-filter:blur(5px); }
+        .ability-cube .text-label { font-size:26px;font-weight:900;color:#fff;text-shadow:2px 2px #000; text-align:center; padding:0 5px; }
+        .cd-overlay { position:absolute;bottom:0;left:0;width:100%;height:0%;background:rgba(255,0,0,.6);z-index:1;border-radius:0 0 15px 15px;transition:height .1s linear; }
+
+        #shop-overlay { position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:none;justify-content:center;align-items:center; }
+        #shop-window { width:92%;background:#fff;border:15px solid #000;position:relative;display:flex;padding:50px;gap:50px;border-radius:50px; }
+        .shop-item { flex:1;display:flex;flex-direction:column;align-items:center; }
+        .red-frame { width:100%;height:320px;border:12px solid #ff0000;display:flex;justify-content:center;align-items:center;margin-bottom:25px;border-radius:30px; }
+        .red-frame img { max-width:90%;max-height:90%; }
+        .btn-buy { background:#00ff00;border:6px solid #000;padding:25px 60px;color:#fff;font-size:36px;cursor:pointer;border-radius:25px;font-weight:900; }
+        #shop-close { position:absolute;top:-30px;right:-30px;background:red;color:#fff;width:60px;height:60px;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;font-weight:900;border:4px solid #000; }
+
+        #admin-notify { position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100002;display:none;justify-content:center;align-items:center; }
+        #admin-notify-box { background:#000;border:6px solid #fff;padding:40px;border-radius:20px;text-align:center;color:#fff;font-size:28px; }
+        #admin-notify-ok { background:#00ff00;border:4px solid #000;color:#000;padding:15px 60px;font-size:24px;border-radius:15px;cursor:pointer;margin-top:20px; }
+
+        #purp-timer { position:absolute;top:300px;left:30px;color:#fff;font-size:50px;text-shadow:4px 4px 0 #f0f;display:none;z-index:200; }
+
+        .king-ball, .cursed-scratches, .fuga-ball, .explosion-effect, .fire-effect, .blue-aura-ball { position:absolute;z-index:20000;pointer-events:none; }
+        .cursed-scratches { width:400px; transition:left 0.05s linear; animation:slowFloat 2s infinite ease-in-out; }
+        .fuga-ball { width:100px; transition:all 0.1s linear; }
+        .explosion-effect { width:50px; animation:explosion 0.2s ease-out forwards; }
+        .fire-effect { width:300px; animation:slowFloat 3s infinite ease-in-out; }
+        .blue-aura-ball { width:150px; transition:left 0.05s linear; animation:slowFloat 1.5s infinite ease-in-out; }
+
+        #shoot-button {
+            position: absolute; bottom: 120px; right: 40px; width: 180px; height: 180px;
+            background: #000; border: 8px solid #fff; border-radius: 50%;
+            display: none; justify-content: center; align-items: center; cursor: pointer;
+            z-index: 1000; box-shadow: 0 10px 0 #333; transition: all 0.1s; overflow: hidden;
         }
-        .rainbow-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: 8000; opacity: 0.5;
-            background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
-            background-size: 400% 400%; animation: rainbowAnim 5s linear infinite;
-            display: none;
+        #shoot-button img { width: 100px; height: 100px; filter: invert(1); }
+        #shoot-button.reloading { background: #ff0000; pointer-events: none; opacity: 0.8; }
+        #shoot-button.reloading::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+            background: rgba(255, 255, 255, 0.3); animation: cooldown 735ms linear forwards;
         }
-        @keyframes rainbowAnim { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .orange-flash { position: fixed; top:0; left:0; width:100vw; height:100vh; background:orange; z-index:20000; display:none; justify-content:center; align-items:center; }
-        .shake { animation: shakeAnim 0.1s infinite; }
-        @keyframes shakeAnim { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, 1px); } }
+        @keyframes cooldown { from { height: 100%; } to { height: 0%; } }
+
+        .admin-notify-blue, .admin-notify-red { position:fixed; top:20%; left:50%; transform:translateX(-50%); font-size:50px; font-weight:900; text-shadow:2px 2px 0 #fff; z-index:2000000; opacity:0; transition:opacity 0.5s, transform 1s; pointer-events:none; }
+        .admin-notify-blue { color:#00f; }
+        .admin-notify-red { color:#f00; }
+        .heli-purchase { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border:6px solid #000; border-radius:20px; padding:30px; text-align:center; color:#800080; font-size:28px; font-weight:900; text-shadow:2px 2px 0 #000; z-index:3000000; }
+        .heli-purchase button { background:#00ff00; border:4px solid #000; color:#000; padding:10px 40px; font-size:24px; border-radius:15px; cursor:pointer; margin-top:20px; }
+        #ammo-info { font-size:20px; color:#000; margin-top:5px; }
     </style>
 </head>
 <body>
 
-<div id="anti-cheat-screen">
-    <div>Молодец, отправляйся на тот свет.</div>
-</div>
+<div id="game-container">
+    <div id="red-screen-overlay"></div>
+    <div id="white-flash"></div>
+    <div id="sorcerer-alert">Sorcerer Активирован</div>
+    <div id="king-alert">King Of Curses Activated</div>
+    <div id="tutorial-hint">Для продолжения игры, нам нужно обучить вас сражаться против врагов. Нажмите на чёрную круглую кнопку, которая расположена у вас на экране в нижнем правом углу.</div>
+    <div id="purp-timer">⏳ 100</div>
 
-<div id="private-tag">Private Server — @Xn1ckname</div>
-<div id="rainbow-scr" class="rainbow-overlay"></div>
-<div id="orange-scr" class="orange-flash"><div id="orange-txt" style="color:white; font-size:60px; font-weight:bold;">ITS ME, NICKNAME!</div></div>
+    <div id="boss-ui-global">
+        <div id="boss-hp-frame"><div id="boss-hp-fill"></div></div>
+        <div id="boss-name-text">Босс</div>
+    </div>
 
-<div id="mod-menu-btn" onmousedown="modStartDrag(event)" ontouchstart="modStartDrag(event)">
-    <span style="font-size: 55px; pointer-events: none;">👨🏿‍🍳</span>
-    <span style="pointer-events: none; margin-top: -5px;">Admin Panel</span>
-</div>
+    <div class="header-center" id="main-header">
+        <div id="title-box">Purple Battleground 1.6</div>
+        <div id="hp-container">
+            <div id="hp-fill"></div>
+            <span id="hp-text">Ваша Шкала ХП: 350</span>
+        </div>
+    </div>
 
-<div id="mod-menu-panel" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
-    <div class="close-x" style="position: absolute; top: 10px; right: 10px; width: 55px; height: 55px; font-size: 35px; background: #fcc419; color: white; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 4px solid white; cursor: pointer; z-index: 100;" onclick="document.getElementById('mod-menu-panel').style.display='none'">×</div>
+    <div class="left-ui-panel" id="side-ui">
+        <div id="money-display">🪙 Purple Money: <span id="m-val">0</span></div>
+        <div id="shop-btn" onmousedown="startAdminTimer()" onmouseup="clearAdminTimer()" ontouchstart="startAdminTimer()" ontouchend="clearAdminTimer()" onclick="event.stopPropagation(); openShop()">🛍️</div>
+    </div>
+
+    <div class="wave-ui" id="wave-ui">
+        <h1 id="wave-big">1 Волна</h1>
+        <div id="enemies-count">Осталось Врагов: 20</div>
+    </div>
+
+    <!-- Два облика зайца -->
+    <img id="main-hare" src="https://i.ibb.co/MyrHnKYB/main-hare.png" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer">
+    <img id="king-hare" src="https://i.ibb.co/GQCPp3b3/king-form.png" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer" style="display: none;">
     
-    <div class="mod-title">Grow A Garden With Trastratravich 1.5 🍭 <br> Made By: @Xn1ckname</div>
+    <img id="heli-hare" src="https://i.ibb.co/sdX45DW8/heli-hare.png" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer">
     
-    <div class="mod-option" onclick="modMoney()">1) Infinity Money</div>
-    <div class="mod-option" onclick="modLevel()">2) Max Level</div>
-    <div class="mod-option" onclick="modGodMode()">
-        3) God Mode
-        <div class="mod-hint">Что делает: Убирает полностью плохие отзывы, и перекрывает вход для воров.</div>
-    </div>
-    <div class="mod-option" onclick="modAllItems()">4) Get All Items</div>
-    <div class="mod-option" onclick="modPlace5()">5) Place 5 Gardens</div>
-    
-    <div style="background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
-        <div style="color: #666; font-size: 14px; margin-bottom: 5px;">6) Announcement (Visual)</div>
-        <input type="text" id="mod-ann-input" class="admin-input" placeholder="Введите Анонс..." style="width: 90%; background: #222; margin-bottom: 10px;">
-        <button class="confirm-btn" style="background: #00ff00; color: black;" onclick="modSendAnn()">подтвердить</button>
-    </div>
+    <div id="floor"></div>
+    <div id="start-btn-ui" onclick="event.stopPropagation(); startBattle()">Начать Перестрелку</div>
 
-    <div class="mod-option" onclick="modClearInv()">7) Clear Inventory</div>
-    <div class="mod-option" onclick="modResetGame()">8) Reset Game</div>
-    <div class="mod-option" onclick="modSchenoriy()">9) Schenoriy Cdel (Complete The Game)</div>
-    <div class="mod-option" onclick="location.reload()">10) Reset Server</div>
-    <div class="mod-option" onclick="modAdminFruits()">11) Admin Fruits</div>
-</div>
-
-<div id="visual-ann-box" class="visual-ann-box">
-    <div style="color: black; font-weight: bold; font-size: 16px; margin-bottom: 5px;">Player [Hacker]</div>
-    <div id="visual-ann-text" style="color: black; font-size: 22px; font-weight: bold;"></div>
-</div>
-
-<div id="game-screen">
-    <div class="ui-header">
-        <div class="title-box">
-            Grow a Garden with<br>Trastratravich
-            <div id="garden-hint-text">Следите за отзывами, чтобы знать мнение посетителей про ваш огород!</div>
-        </div>
-        <div class="stats-column">
-            <div class="white-plate"><div class="coin-icon"></div>Монеты: <span id="m-val">900</span></div>
-            <div class="lvl-plate">Текущий Уровень: <span id="l-val">1</span></div>
-            <div class="xp-container">
-                <div id="xp-text">0 / 100 XP</div>
-                <div id="xp-fill"></div>
+    <div id="admin-trigger">Админ Панель 1.6 🐢</div>
+    <div id="admin-menu">
+        <div style="display:flex; align-items:center; margin-bottom:20px; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center;">
+                <img id="sorcerer-icon" src="https://i.ibb.co/KpR8FDxQ/sorcerer-icon.png" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer" onclick="activateSorcerer()">
+                <span style="color:#ff0;font-size:28px;font-weight:900;text-shadow:0 0 10px #ff0,0 0 20px #ff0;animation:glowYellow 2s infinite alternate;">Sorcerer</span>
+            </div>
+            <div style="display:flex; align-items:center;">
+                <img class="king-icon" src="https://i.ibb.co/mV3qKgkp/images-21.jpg" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer" onclick="activateKingOfCurses()">
+                <span style="color:#f00;font-size:28px;font-weight:900;text-shadow:0 0 10px #f00,0 0 20px #f00;animation:glowRed 2s infinite alternate;">King Of Curses <span style="font-size:18px;">(Тыкните на значок.)</span></span>
             </div>
         </div>
+        <button class="admin-btn" onclick="addMoneyAdmin()">Деньжата +100К</button>
+        <button class="admin-btn" onclick="toggleCurse()">Проклятие (Бессмертие)</button>
+        <button class="admin-btn" onclick="skipWaveAdmin()">Пропустить Волну</button>
+        <button class="admin-btn" onclick="document.getElementById('admin-menu').classList.remove('show');document.getElementById('admin-menu').style.display='none'">Закрыть</button>
     </div>
 
-    <div id="robbery-alert">
-        <div style="background:#ff4d4d; color:white; padding:15px; margin:-20px -20px 15px -20px; border-radius:20px 20px 0 0; text-align:center; font-size:24px; font-weight:bold;">🚨 КРАЖА! 🚨</div>
-        <p style="text-align:center; font-weight:bold; font-size:18px;" id="robbery-msg">ПАРНИ КРАДУТ ВАШИ ФРУКТЫ, ОСТАНОВИТЕ ИХ!</p>
-        <div id="robbery-timer" style="text-align:center;">35</div>
-        <button class="robbery-btn" onclick="stopRobbery()">Вызвать подгон</button>
-    </div>
+    <!-- Контейнер для способностей -->
+    <div id="ability-container"></div>
 
-    <div id="admin-cube">Админ Панель 1.6 🌿 @Xn1ckname</div>
-
-    <div id="global-announcement">
-        <div class="owner-tag">@Xn1ckname [Owner]</div>
-        <p id="announcement-text" style="color: black; margin: 15px 0 0 0; font-size: 26px; font-weight: bold; text-align: center;"></p>
-    </div>
-
-    <div id="placement-hint"></div>
-
-    <div class="side-menu">
-        <button class="circle-btn btn-r" onclick="handleReviewsClick()">
-            <div id="review-badge" class="notif-badge">0</div>
-            <div class="msg-icon">
-                <div class="msg-lines">
-                    <div class="msg-line"></div>
-                    <div class="msg-line"></div>
-                    <div class="msg-line short"></div>
-                </div>
-            </div>
-        </button>
-        <button class="circle-btn btn-p" id="menu-trigger-btn" onclick="openW('main-m')"><span style="font-size:70px; color:white;">☰</span></button>
-        <button class="circle-btn btn-b" id="trigger-btn">
-            <div class="dots-circ"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-        </button>
-    </div>
-
-    <div class="modal" id="review-no-garden">
-        <div style="background:#1a0dab; color:white; padding:15px; margin:-30px -30px 20px -30px; border-radius:30px 30px 0 0; text-align:center;">Отзывы в адрес вашего сада.</div>
-        <p style="text-align:center; font-weight:bold; font-size:20px;">Хмм, может тебе стоит сначала открыть свой сад? Возвращайся по-позже</p>
-        <button class="lan-btn" onclick="cls()">Лан.</button>
-    </div>
-
-    <div class="modal" id="review-empty-garden">
-        <div style="background:#1a0dab; color:white; padding:15px; margin:-30px -30px 20px -30px; border-radius:30px 30px 0 0; text-align:center;">Отзывы в адрес вашего сада.</div>
-        <p style="text-align:center; font-weight:bold; font-size:20px;">У вас нету никаких отзывов на данный момент, развивайте ваш сад</p>
-        <button class="lan-btn" onclick="cls()">Лан.</button>
-    </div>
-
-    <div class="modal" id="review-list-modal">
-        <div class="close-x" onclick="cls()">×</div>
-        <div style="background:#1a0dab; color:white; padding:15px; margin:-30px -30px 20px -30px; border-radius:30px 30px 0 0; text-align:center;">Отзывы в адрес вашего сада.</div>
-        <div id="reviews-container" style="max-height:400px; overflow-y:auto; padding-right:10px;"></div>
-    </div>
-
-    <div class="modal" id="rep-dead-m" class="rep-dead-modal">
-        <div style="background:#ff4d4d; color:white; padding:15px; margin:-30px -30px 20px -30px; border-radius:30px 30px 0 0; text-align:center; font-size:24px; font-weight:bold;">Репутация Мертва</div>
-        <p style="color:black; font-size:18px; text-align:center; font-weight:bold; margin-top:20px;">Все ваши сады, были ограничены, и закрыты навсегда, по-причине — ужасной внимательности, от которой посетители были в ужасе. С этого момента, Вы обречены, Мы забрали ваши права на приобретение новых садов.</p>
-        <button class="rep-btn-ok" onclick="cls()">Ок.</button>
-    </div>
-
-    <div class="modal" id="ann-error" style="background: white;">
-        <div class="close-x" style="background: #fcc419;" onclick="clsOne('ann-error'); openW('admin-panel');">×</div>
-        <p style="color: black; text-align: center; font-weight: bold; margin-top: 30px; font-size: 20px;">Анонс пустой, введи текст.</p>
-    </div>
-
-    <div class="modal" id="main-m">
-        <div class="close-x" onclick="cls()">×</div>
-        <h2 style="text-align:center; font-size: 30px; margin-bottom: 20px;">Ваша Сеть.</h2>
-        <div style="display:flex; gap:15px; flex-wrap: wrap;">
-            <div style="border:4px solid red; padding:15px; text-align:center; flex:1; border-radius: 15px; min-width: 140px;">
-                <b style="color:black; font-size: 16px;">Приобрести Сад</b><br>
-                <b style="font-size: 18px;">500 монет.</b><div style="font-size:60px;">🌴</div>
-                <button style="background:red; color:white; border:none; width:100%; padding:12px; font-weight:bold; cursor:pointer; font-size: 18px; border-radius: 8px; margin-top:5px;" onclick="startGo('garden')">Го.</button>
-            </div>
-            <div id="antenna-func" style="border:4px solid #33e0ff; padding:15px; text-align:center; flex:1; border-radius: 15px; opacity:0.5; min-width: 140px;">
-                <b style="color:black; font-size: 16px;">XP Антенна</b><br>
-                <b style="font-size: 18px; visibility: hidden;">1600 монет.</b><div style="font-size:60px;">📡</div>
-                <button style="background:#33e0ff; color:black; border:none; width:100%; padding:12px; font-weight:bold; cursor:pointer; font-size: 18px; border-radius: 8px; margin-top:5px;" onclick="tryBuyAntenna()">Го.</button>
-            </div>
-            <div id="secret-deal" style="text-align:center; width:100%; opacity:0.5; margin-top: 15px;">
-                <b id="deal-txt" style="color:red; font-size: 18px;">Закрыто</b><div style="font-size:60px;">?</div>
-                <div style="background:#e066ff; color:white; font-size:14px; padding: 10px; border-radius: 5px;">Щеноричный Сдел.</div>
-                <p style="font-size:12px; font-weight:bold; margin-top:10px; color:#555;">Для разблокировки этой функции, вам требуется достичь 900 уровень.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal admin-modal" id="admin-panel">
-        <div class="close-x" onclick="cls()">×</div>
-        <h2 style="font-size: 24px; color: white; margin-bottom: 5px;">Админ Панель 1.6 🌿 @Xn1ckname</h2>
-        <button class="admin-btn" onclick="cheatMoney()">1) Бесконечные деньги — включить.</button>
-        <button class="admin-btn" onclick="cheatLevel()">2) Бесконечный Уровень — Включить.</button>
-        <div style="border-top: 2px dashed #444; padding-top: 10px;">
-            <b style="color: #00ff00;">3) Announcement — Сообщение:</b>
-            <input type="text" id="ann-input" class="admin-input" placeholder="Введите Анонс...">
-            <button class="confirm-btn" onclick="sendCustomAnnouncement()">ПОДТВЕРДИТЬ</button>
-        </div>
-        <button class="admin-btn" style="margin-top: 20px; border-color: red; color: red;" onclick="toggleGodMode()">⚡️ РЕЖИМ БОГА — КЛИК</button>
-    </div>
-
-    <div class="modal" id="err-m">
-        <div class="close-x" onclick="clsOne('err-m')">×</div>
-        <h2 style="text-align:center; font-size: 30px; color: red; margin-bottom: 20px;">Ошибка.</h2>
-        <p id="err-text" style="text-align:center; font-size: 20px; font-weight: bold; color: #333; line-height: 1.4;">Чтобы разблокировать доступ к этому предмету, в первую очередь вам нужно заработать 1600 монет, и 5 уровень. Приходи по-позже, щегол!</p>
-    </div>
-
-    <div class="modal" id="ant-income-m">
-        <div class="close-x" onclick="clsOne('ant-income-m')">×</div>
-        <div style="background:#fcc419; color:black; padding:20px; text-align:center; margin:-30px -30px 20px -30px; border-radius:30px 30px 0 0; font-size: 24px;">Доход Антенны #<span id="ant-id">0</span></div>
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-            <p style="text-align:center; font-size: 22px; font-weight: bold; margin: 10px 0;">Ваша прибыль: +<span id="ant-val">0</span> XP</p>
-            <button id="ant-up-btn" onclick="upgradeAntenna()" style="background:#ccff00; padding:15px; font-weight:bold; cursor:pointer; border:4px solid black; border-radius:15px; width:100%; font-size:16px;">Улучшить доход на +10 XP — 350 монет.</button>
-            <button id="ant-ex-btn" onclick="exchangeAntenna()" style="background:white; padding:15px; font-weight:bold; cursor:pointer; border:3px solid #ccc; border-radius:15px; width:100%; font-size:16px;">Обмен Монет на 350 XP — 500 монет.</button>
-        </div>
-    </div>
-
-    <div class="modal" id="store-m">
-        <div class="close-x" onclick="cls()">×</div>
-        <div style="background:blue; color:white; padding:20px; text-align:center; margin:-30px -30px 20px -30px; border-radius:30px 30px 0 0; font-size: 24px;">Склад Сада #<span id="garden-id-display">0</span></div>
-        <div id="store-list" style="max-height: 400px; overflow-y: auto;"></div>
-    </div>
-
-    <div class="modal" id="info-m">
-        <div class="close-x" onclick="cls()">×</div>
-        <h3 style="color:black; font-size: 26px; margin-bottom: 15px;">Чё от меня требуется</h3>
-        <p style="color:black; font-size: 18px;">Карочи, тут нада виращивать сад с Трастратравичем и карочи ОН ЛЕТАТЬ УМЕЕ.</p>
-        <p style="font-size:12px; color:gray; margin-top: 30px;">Создатель: Александр Фиримон Русланович.</p>
-    </div>
-
-    <div class="modal" id="tg-modal">
-        <div class="close-x" onclick="cls()">×</div>
-        <p id="tg-text" style="color:black; font-weight:bold; text-align:center; padding-top:20px; font-size: 18px;"></p>
+    <!-- Новая кнопка стрельбы -->
+    <div id="shoot-button" onclick="fireBullet()">
+        <img src="https://i.ibb.co/Q70CBCKb/pulya.png" alt="bullet">
     </div>
 </div>
 
-<div id="ending"></div>
+<div id="subtitle-box">
+    <div id="sub-name">Пурпулезка</div>
+    <div id="sub-text"></div>
+</div>
+
+<div id="lose-screen">
+    <h2 style="color:white; font-size:60px;">Мда, лучше бы постарался.</h2>
+    <button style="background:#fff;padding:20px 60px;font-size:35px;cursor:pointer;border:6px solid #000;border-radius:15px;" onclick="respawn()">Лан.</button>
+</div>
+
+<div id="shop-overlay">
+    <div id="shop-window">
+        <div class="shop-item">
+            <div class="red-frame">
+                <img src="https://i.ibb.co/sdX45DW8/heli-hare.png" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer">
+            </div>
+            <h2 style="font-size:30px;margin:0;">Верто-Заяц</h2>
+            <p style="font-size:16px;text-align:center;">Отличный Напарник, всегда успешно помогает, всегда готов отбиваться от врагов вместе с вами. Рекомендуется для покупки.</p>
+            <div style="font-size:28px;font-weight:900;color:#d00;margin:10px;">10000 Монет</div>
+            <button class="btn-buy" onclick="buyHeli()">Приобрести</button>
+        </div>
+        <div class="shop-item">
+            <div class="red-frame">
+                <img src="https://i.ibb.co/vCKnQn4L/ammo-icon.png" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer">
+            </div>
+            <h2 style="font-size:30px;margin:0;">Снаряды</h2>
+            <p style="font-size:16px;text-align:center;">Полезная Штука! Проплати 250 PurpleMoney чтобы твои снаряды в оружии получили +30 больше урона. Цена с каждой покупкой растёт на +100 монет.</p>
+            <div id="ammo-price-text" style="font-size:28px;font-weight:900;color:#d00;margin:10px;">250 Монет</div>
+            <div id="ammo-info">Урон Вашего Оружия: 40</div>
+            <button class="btn-buy" onclick="buyAmmo()">Приобрести</button>
+        </div>
+        <div id="shop-close" onclick="closeShop()">X</div>
+    </div>
+</div>
+
+<div id="admin-notify">
+    <div id="admin-notify-box">
+        Админ Панель 1.6 врублена 👨🏿‍🍳👨🏿‍🍳👨🏿‍🍳
+        <div id="admin-notify-ok">Ок.</div>
+    </div>
+</div>
+
+<div id="final-credits"></div>
 
 <script>
-    let money = 900, lvl = 1, xp = 0, isPlacing = null, secretPurchased = false;
-    let gardenCount = 0, antennaCount = 0;
-    let activeGardenIdx = null, activeAntIdx = null;
-    let gardens = [], antennas = [];
+// --------------------------------------------------------------
+// 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И КОНСТАНТЫ
+// --------------------------------------------------------------
+const enemyData = [
+    {name:"Зомби Заяц",hp:88,dmg:20, speedVal:7, start:1,end:5,img:"https://i.ibb.co/67QjYjbR/zombie-hare.png", reward:85},
+    {name:"Раб Пурпулезки",hp:510,dmg:60, speedVal:6, start:5,end:12,img:"https://i.ibb.co/BHmN5CZr/raby-purpu.png", reward:85},
+    {name:"Малиновый Хыр",hp:1890,dmg:180, speedVal:5, start:12,end:22,img:"https://i.ibb.co/8DDZLPqz/malinovyy-khyr.png", reward:85},
+    {name:"Кровавый Бантик",hp:3791,dmg:458, speedVal:5, start:22,end:30,img:"https://i.ibb.co/0j1GyZdq/krovavyy-bantik.png", reward:85},
+    {name:"Истинный Гость",hp:10091,dmg:891, speedVal:4, start:30,end:37,img:"https://i.ibb.co/5h1wkQSM/istinnyy-gost.png", reward:85},
+    {name:"Щеноричный Хыр",hp:18901,dmg:1891, speedVal:5, start:37,end:45,img:"https://i.ibb.co/DHHsSGBd/shchenorichnyy-sdel.png", reward:85},
+    {name:"Shadow Hare",hp:31901,dmg:91000, speedVal:7, start:45,end:56,img:"https://i.ibb.co/391X22Gf/shadow-hare.png", reward:85},
+    {name:"The Nameless Hare",hp:100000,dmg:99999999, speedVal:15, start:42,end:43,isBoss:true,img:"https://i.ibb.co/7tj6bpCR/the-nameless-hare.png", reward:3800},
+    {name:"Zombie Father Hare",hp:35611,dmg:8911, speedVal:7, start:56,end:64,img:"https://i.ibb.co/BVSwbZHN/zombie-father-hare.png", reward:85},
+    {name:"Инши",hp:57891,dmg:90019, speedVal:6, start:64,end:70,img:"https://i.ibb.co/Ldb9y7jB/inshi.png", reward:85},
+    {name:"Agetha Hare",hp:355005,dmg:91919199191, speedVal:20, start:70,end:71,isBoss:true,img:"https://i.ibb.co/Fkw0NDB6/agetha-hare.png", reward:3800},
+    {name:"Пурпулезка",hp:550000,dmg:10, finalDmg:991919191919, speedVal:0, start:71,end:72,isFinal:true,img:"https://i.ibb.co/wZS6FJrz/purpulezka.png", reward:3800}
+];
+
+let money=0, hp=350, maxHp=350, damage=40, ammoPrice=250, wave=1, enemiesLeft=20, isGameActive=false;
+let hasHeli=false, adminTimer, isSorcerer=false, isKingOfCurses=false, isCurse=false;
+let currentEnemies=[], bossActive=false, purpTimer=100;
+let bossBlurInterval = null, waveInProgress = false;
+let blueBallActive = false; // для старой способности Sorcerer
+let canShoot = true;
+let heliInterval = null;
+let activeCharacter = 'default'; // 'sorcerer', 'king', 'default'
+
+// Элементы UI
+const shootButton = document.getElementById('shoot-button');
+const tutorialHint = document.getElementById('tutorial-hint');
+const waveBig = document.getElementById('wave-big');
+const enemiesCount = document.getElementById('enemies-count');
+const abilityContainer = document.getElementById('ability-container');
+const mainHare = document.getElementById('main-hare');
+const kingHare = document.getElementById('king-hare');
+const sorcererAlert = document.getElementById('sorcerer-alert');
+const kingAlert = document.getElementById('king-alert');
+
+function updateUI(){
+    document.getElementById('m-val').innerText=money;
+    document.getElementById('hp-text').innerText="Ваша Шкала ХП: "+Math.max(0,Math.floor(hp));
+    document.getElementById('hp-fill').style.width=(hp/maxHp)*100+"%";
+    waveBig.innerText = wave + " Волна";
     
-    let unreadReviews = 0, myReviews = [];
-    let isRobberyActive = false, robberyInterval = null, robberyGardenIdx = null;
-    let robberyTimeLeft = 35, robberyTimeLeftInternal = 35, robberyTimerInterval = null;
-    let isBanned = false, godMode = false;
-
-    let reviewQueue = [], lastReviewTime = 0, reviewMessageCooldowns = {};
-
-    let itemDefs = [
-        {id:'pom', n:'Помидоры', p:15, r:10, t:12000, e:'🍅', amt:10}, 
-        {id:'ogur', n:'Огурцы', p:5, r:6, t:16000, e:'🥒', amt:10},
-        {id:'arb', n:'Семень Арбуза', p:35, r:25, t:9000, e:'🍉', amt:10}, 
-        {id:'klub', n:'Семень Клубники', p:55, r:85, t:5000, e:'🍓', amt:10},
-        {id:'tyk', n:'Семень Тыквы', p:30, r:22, t:11000, e:'🎃', amt:10},
-        {id:'vin', n:'Виноград', p:150, r:50, t:6000, e:'🍇', amt:5}, 
-        {id:'cher', n:'Дерево Черешни', p:450, r:235, t:3000, e:'🍒', amt:2},
-        {id:'sec', n:'???', p:15500, e:'❓', s:true}
-    ];
-
-    const saladReview = "Хотел я значит сделать салат, но не хотел покупать для него овощи, думал, что опять куплю херню, но тут, моя жизнь превратилась в сказку, я увидел ваш сад! И думаю, а почему бы и не пойти к вам? Аж появилось доверие. Решил я взять пакет и набрать пару огурцов и помидоров. Возращаюсь в свою хатку, и делаю салат, и просто болдею, огурцы и помидоры были как в сказке, однозначно 5 звёзд!";
-
-    const goodReviews = {
-        pom: { text: saladReview, stars: 5 },
-        ogur: { text: saladReview, stars: 5 },
-        vin: { text: "Отличный Виноград! С радостью съел, не фрукт, а мёд! Всем рекомендую.", stars: 5 },
-        arb: { text: "Спасибо! Искал свежий арбуз для детей, и он был ахриненным! Всем рекомендую!", stars: 5 },
-        cher: { text: "Сидела и думала о том, где откопать хорошую черешню, вышла я значит на улицу и вижу ваш сад, и решилась я купить пару черешень у вас, они были ахриненные! Не когда не ела такие, а самое главное, что такие фиг достанешь. Спасибо!", stars: 5 },
-        tyk: { text: "Вообще кайф! Искал тыкву, ведь сегодня Хэллоуин, и нашёл у вас! Получилась прикольная вкусная декорация, Мы потом её съели.", stars: 5 },
-        klub: { text: "Какая сочная клубника! Лучшее, что я пробовал за последнее время.", stars: 5 }
-    };
-
-    const badReviews = [
-        { text: "НУ И БРЕД, КУПИЛА ЗНАЧИТ У ВАС КИЛОГРАММ КЛУБНИКИ, МАЛО ТОГО, ЧТО ОНА ОЧЕНЬ ДОРОГАЯ, ТАК И ЕЩЁ КОГДА МНЕ ЕЁ ВЫДАЛИ В РУКИ, СРАЗУ ЖЕ ВЫХВАТИЛ КАКОЙ-ТО ПАРЕНЬ, НИ ОХРАНЫ, НИЧЕГО! ОСТАЛАСЬ БЕЗ ДЕНЕГ И КЛУБНИКИ, СПАСИБО!", stars: 1 },
-        { text: "Ну и что это значит? Хожу я значит по саду, чтобы выбрать себе фрукт, и вижу, как толпа подростков нагло срывают арбузы с огорода и убегают. Есть у вас вообще внимательность?", stars: 2 },
-        { text: "Я конечно всё понимаю, но думаю, вам нужно больше внимательности.", stars: 2 },
-        { text: "Ну спасибо, вместо того, чтобы нормально следить за садом, вы пускаете левых гопников. Взял я одну тыкву, и три подростка выхватили её у меня, причём настолько быстро, что даже моргнуть не успел, и на моих глазах один из них пнул мою тыкву ногой, а затем запинали её, я решил податься и уйти. Больше не прийду к вам.", stars: 1 }
-    ];
-
-    window.addEventListener('storage', (e) => { if (e.key === 'global_announcement') showAnnouncementUI(e.newValue); });
-
-    function showAnnouncementUI(text) {
-        const box = document.getElementById('global-announcement');
-        const p = document.getElementById('announcement-text');
-        p.innerText = text;
-        box.style.display = 'block';
-        setTimeout(() => box.classList.add('show'), 50);
-        setTimeout(() => { box.classList.remove('show'); setTimeout(() => { box.style.display = 'none'; }, 500); }, 12000);
+    if(bossActive || (wave >= 42 && wave <= 43) || (wave >= 70 && wave <= 71)) {
+        enemiesCount.style.display = 'none';
+    } else {
+        enemiesCount.style.display = 'block';
+        enemiesCount.innerText = "Осталось Врагов: " + enemiesLeft;
     }
+    
+    document.getElementById('ammo-info').innerText = `Урон Вашего Оружия: ${damage}`;
+}
 
-    function sendCustomAnnouncement() {
-        let input = document.getElementById('ann-input');
-        let text = input.value.trim();
-        if (text === "") { clsOne('admin-panel'); openW('ann-error'); } 
-        else { localStorage.setItem('global_announcement', text + ' ' + Date.now()); showAnnouncementUI(text); input.value = ""; cls(); }
+// --------------------------------------------------------------
+// 2. ФУНКЦИИ ЗАВЕРШЕНИЯ ВОЛНЫ
+// --------------------------------------------------------------
+function endWave() {
+    if (!waveInProgress && !bossActive) return;
+    
+    console.log("Волна успешно завершена!");
+    
+    currentEnemies.forEach(e => {
+        clearInterval(e.moveInterval);
+        if(e.el) e.el.remove();
+    });
+    currentEnemies = [];
+    
+    isGameActive = false; 
+    bossActive = false; 
+    waveInProgress = false;
+    hp = maxHp; 
+    
+    tutorialHint.style.display='none';
+    document.getElementById('boss-ui-global').style.transition='opacity 0.5s';
+    document.getElementById('boss-ui-global').style.opacity='0';
+    setTimeout(() => document.getElementById('boss-ui-global').style.display='none', 500);
+    document.getElementById('purp-timer').style.display='none';
+    document.getElementById('game-container').style.filter='none';
+    document.getElementById('red-screen-overlay').style.background='rgba(255,0,0,0)';
+    
+    if(bossBlurInterval) clearInterval(bossBlurInterval);
+    
+    wave++;
+    updateUI();
+    toggleUI(true);
+    document.getElementById('main-header').style.top = '15px';
+}
+
+// --------------------------------------------------------------
+// 3. ФУНКЦИИ ДЛЯ АКТИВАЦИИ ПЕРСОНАЖЕЙ
+// --------------------------------------------------------------
+function activateSorcerer() {
+    if(activeCharacter === 'sorcerer') return;
+    activeCharacter = 'sorcerer';
+    isSorcerer = true;
+    isKingOfCurses = false;
+    
+    // Показываем обычного зайца, скрываем короля
+    mainHare.style.display = 'block';
+    kingHare.style.display = 'none';
+    mainHare.src = "https://i.ibb.co/5gLfm3VW/sorcerer-form.png";
+    
+    sorcererAlert.style.transform = "translate(-50%,-50%) scale(1)";
+    setTimeout(() => sorcererAlert.style.transform = "translate(-50%,-50%) scale(0)", 2000);
+    
+    if(isGameActive || bossActive){
+        showSorcererAbilities();
     }
+}
 
-    let pT;
-    const mB = document.getElementById('menu-trigger-btn');
-    mB.addEventListener('mousedown', () => { pT = window.setTimeout(() => { document.getElementById('admin-cube').style.display = 'flex'; showPop("АКТИВАЦИЯ МОМО", "#00ff00"); }, 24000); });
-    mB.addEventListener('touchstart', (e) => { pT = window.setTimeout(() => { document.getElementById('admin-cube').style.display = 'flex'; showPop("АКТИВАЦИЯ МОМО", "#00ff00"); }, 24000); });
-    mB.addEventListener('mouseup', () => { clearTimeout(pT); });
-    mB.addEventListener('touchend', () => { clearTimeout(pT); });
-
-    const triggerBtn = document.getElementById('trigger-btn');
-    triggerBtn.addEventListener('click', () => { openW('info-m'); });
-
-    const cube = document.getElementById('admin-cube');
-    let isDragging = false, offsetX, offsetY;
-    cube.addEventListener('mousedown', (e) => { if (e.target === cube) { isDragging = true; offsetX = e.clientX - cube.offsetLeft; offsetY = e.clientY - cube.offsetTop; } });
-    cube.addEventListener('touchstart', (e) => { isDragging = true; const touch = e.touches[0]; offsetX = touch.clientX - cube.offsetLeft; offsetY = touch.clientY - cube.offsetTop; });
-    document.addEventListener('mousemove', (e) => { if (isDragging) { cube.style.left = (e.clientX - offsetX) + 'px'; cube.style.top = (e.clientY - offsetY) + 'px'; cube.style.right = 'auto'; } });
-    document.addEventListener('touchmove', (e) => { if (isDragging) { const touch = e.touches[0]; cube.style.left = (touch.clientX - offsetX) + 'px'; cube.style.top = (touch.clientY - offsetY) + 'px'; cube.style.right = 'auto'; } });
-    document.addEventListener('mouseup', () => { isDragging = false; });
-    document.addEventListener('touchend', () => { isDragging = false; });
-    cube.addEventListener('click', () => { if(!isDragging) openW('admin-panel'); });
-
-    function cheatMoney() { money = 9999999999; update(); showPop("ЧИТ: ДЕНЬГИ", "#00ff00"); }
-    function cheatLevel() { lvl = 99999999; update(); showPop("ЧИТ: УРОВЕНЬ", "#33e0ff"); }
-
-    function toggleGodMode() {
-        godMode = !godMode;
-        let txt = godMode ? "РЕЖИМ БОГА ВКЛЮЧЕН" : "РЕЖИМ БОГА ОТКЛЮЧЁН";
-        showPop(txt, "red");
-        if(godMode) {
-            myReviews = myReviews.filter(r => r.stars > 2);
-            unreadReviews = 0;
-            update();
-        }
+function activateKingOfCurses() {
+    if(activeCharacter === 'king') return;
+    activeCharacter = 'king';
+    isKingOfCurses = true;
+    isSorcerer = false;
+    
+    // Показываем короля, скрываем обычного зайца
+    mainHare.style.display = 'none';
+    kingHare.style.display = 'block';
+    
+    let notify = document.createElement('div');
+    notify.className = 'admin-notify-red';
+    notify.innerText = 'King Of Curses Activated';
+    document.body.appendChild(notify);
+    setTimeout(() => { notify.style.opacity = '1'; notify.style.transform = 'translateX(-50%) translateY(-30px)'; }, 10);
+    setTimeout(() => { 
+        notify.style.opacity = '0'; 
+        notify.style.transform = 'translateX(-50%) translateY(-80px)'; 
+        setTimeout(() => notify.remove(), 2000); 
+    }, 2000);
+    
+    if(isGameActive || bossActive){
+        showKingAbilities();
     }
+}
 
-    function update() {
-        document.getElementById('m-val').innerText = Math.floor(money);
-        document.getElementById('l-val').innerText = lvl;
-        let target = lvl * 100;
-        document.getElementById('xp-fill').style.width = (xp / target * 100) + "%";
-        document.getElementById('xp-text').innerText = Math.floor(xp) + " / " + target + " XP";
+// --------------------------------------------------------------
+// 4. ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ СПОСОБНОСТЕЙ
+// --------------------------------------------------------------
+function showSorcererAbilities() {
+    abilityContainer.innerHTML = `
+        <div class="ability-cube" onclick="castSorcererAbility('red')">
+            <span class="text-label">Red Ball</span>
+            <div id="cd-red" class="cd-overlay"></div>
+        </div>
+        <div class="ability-cube" onclick="castSorcererAbility('blue')">
+            <span class="text-label">Blue Ball</span>
+            <div id="cd-blue" class="cd-overlay"></div>
+        </div>
+        <div class="ability-cube" onclick="castSorcererAbility('infinity')">
+            <span class="text-label">Infinity</span>
+            <div id="cd-infinity" class="cd-overlay"></div>
+        </div>
+    `;
+    abilityContainer.style.display = 'flex';
+    setTimeout(() => abilityContainer.classList.add('active'), 50);
+}
+
+function showKingAbilities() {
+    abilityContainer.innerHTML = `
+        <div class="ability-cube" onclick="castKingAbility('scratches')">
+            <span class="text-label">Cursed Scratches</span>
+            <div id="cd-king1" class="cd-overlay"></div>
+        </div>
+        <div class="ability-cube" onclick="castKingAbility('fuga')">
+            <span class="text-label">Fuga</span>
+            <div id="cd-king2" class="cd-overlay"></div>
+        </div>
+        <div class="ability-cube" onclick="castKingAbility('aura')">
+            <span class="text-label">Blue Aura</span>
+            <div id="cd-king3" class="cd-overlay"></div>
+        </div>
+    `;
+    abilityContainer.style.display = 'flex';
+    setTimeout(() => abilityContainer.classList.add('active'), 50);
+}
+
+function hideAbilities() {
+    abilityContainer.classList.remove('active');
+    setTimeout(() => abilityContainer.style.display = 'none', 600);
+}
+
+// --------------------------------------------------------------
+// 5. ФУНКЦИИ ДЛЯ СПОСОБНОСТЕЙ KING OF CURSES
+// --------------------------------------------------------------
+function castKingAbility(type) {
+    if((!isGameActive && !bossActive) || !isKingOfCurses) return;
+    
+    let cdId = type === 'scratches' ? 'cd-king1' : (type === 'fuga' ? 'cd-king2' : 'cd-king3');
+    let cd = document.getElementById(cdId);
+    if(!cd || cd.style.height !== '0%' && cd.style.height !== '') return;
+    
+    cd.style.height = '100%';
+    let time = 15000;
+    let s = Date.now();
+    let int = setInterval(() => {
+        let e = Date.now() - s;
+        cd.style.height = Math.max(0, 100 - (e/time*100)) + '%';
+        if(e >= time) clearInterval(int);
+    }, 100);
+
+    let hare = kingHare; // Используем короля для анимаций
+
+    if(type === 'scratches') {
+        hare.style.animation = 'dash 0.5s ease';
+        setTimeout(() => hare.style.animation = '', 500);
         
-        const badge = document.getElementById('review-badge');
-        if(unreadReviews > 0) { badge.innerText = unreadReviews; badge.style.display = 'flex'; } 
-        else { badge.style.display = 'none'; }
-
-        if(gardenCount > 0) document.getElementById('garden-hint-text').style.display = 'block';
-        if(lvl >= 5) document.getElementById('antenna-func').style.opacity = "1";
-        if (lvl >= 900) {
-            let d = document.getElementById('secret-deal'); d.style.opacity = "1";
-            document.getElementById('deal-txt').innerText = "ОТКРЫТО"; document.getElementById('deal-txt').style.color = "green";
-            d.onclick = startEnd; d.style.cursor = "pointer";
-        }
-        if (activeGardenIdx !== null) {
-            document.getElementById('garden-id-display').innerText = activeGardenIdx + 1;
-            const list = document.getElementById('store-list'); list.innerHTML = '';
-            itemDefs.forEach(i => {
-                let stock = (i.s || i.noAmt) ? '' : `<div style="font-size:14px;color:#444;font-weight:bold;">Штук: ${gardens[activeGardenIdx][i.id] || 0}</div>`;
-                list.innerHTML += `<div style="padding:15px 0; border-bottom:2px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <div><b style="font-size:18px;">${i.e} ${i.n} — ${i.p} монет.</b>${stock}</div>
-                    <button style="background:#ccff00; padding:10px 15px; font-weight:bold; cursor:pointer; border:2px solid black; border-radius:8px; font-size:16px;" onclick="buy('${i.id}')">Купить</button>
-                </div>`;
+        let ball = document.createElement('img');
+        ball.src = 'https://i.ibb.co/0yV9qKqX/cursed-scratches.png';
+        ball.className = 'cursed-scratches';
+        ball.style.left = '300px';
+        ball.style.bottom = '30%';
+        ball.style.width = '400px'; // Гигантский размер
+        document.getElementById('game-container').appendChild(ball);
+        
+        // Медленное движение - 4 секунды до правой стороны
+        let pos = 300;
+        let targetX = window.innerWidth + 200;
+        let startTime = Date.now();
+        let duration = 4000; // 4 секунды
+        
+        let flyInterval = setInterval(() => {
+            let elapsed = Date.now() - startTime;
+            let progress = Math.min(elapsed / duration, 1);
+            pos = 300 + (targetX - 300) * progress;
+            ball.style.left = pos + 'px';
+            
+            if(progress >= 1) { 
+                clearInterval(flyInterval); 
+                ball.remove(); 
+            }
+            
+            [...currentEnemies].forEach(e => {
+                if(!e || !e.el) return;
+                let er = e.el.getBoundingClientRect();
+                let br = ball.getBoundingClientRect();
+                if(br.right > er.left-50 && br.left < er.right+50 && br.top < er.bottom+50 && br.bottom > er.top-50) {
+                    e.hp -= 1200;
+                    if(e.hp <= 0) {
+                        if(e.isBoss || e.isFinal) updateBossHP(e);
+                        else {
+                            clearInterval(e.moveInterval);
+                            if(e.el) e.el.remove();
+                            const index = currentEnemies.indexOf(e);
+                            if (index > -1) currentEnemies.splice(index, 1);
+                            money += e.reward || 85;
+                            enemiesLeft--;
+                            updateUI();
+                            if(currentEnemies.length === 0 && !bossActive && waveInProgress) endWave();
+                        }
+                    }
+                    if(!e.isBoss && !e.isFinal){
+                        let fill = e.el.querySelector('.zombie-hp-fill');
+                        if(fill) fill.style.width = (e.hp/e.maxHp)*100 + "%";
+                        let txt = e.el.querySelector('div[style*="top:3px"]');
+                        if(txt) txt.innerText = Math.max(0,Math.floor(e.hp)) + " ХП";
+                    } else {
+                        document.getElementById('boss-hp-fill').style.width = (e.hp/e.maxHp)*100 + "%";
+                        document.getElementById('boss-name-text').innerHTML = `${e.name} [${Math.floor(e.hp)}/${e.maxHp}]`;
+                    }
+                }
             });
-        }
+        }, 50);
     }
-
-    function addXP(amt) { xp += amt; while(xp >= lvl * 100) { xp -= lvl * 100; lvl++; } update(); }
     
-    function showPop(t, c, x, y) {
-        const p = document.createElement('div'); p.className = 'popup'; p.innerText = t; p.style.color = c;
-        p.style.left = (x || window.innerWidth/2) + "px"; p.style.top = (y || window.innerHeight/2) + "px"; 
-        document.body.appendChild(p); setTimeout(() => p.remove(), 1000);
-    }
-
-    function handleReviewsClick() {
-        if(gardenCount === 0) { openW('review-no-garden'); } 
-        else {
-            if(myReviews.length === 0) { openW('review-empty-garden'); } 
-            else { renderReviews(); openW('review-list-modal'); unreadReviews = 0; update(); }
-        }
-    }
-
-    function renderReviews() {
-        const container = document.getElementById('reviews-container');
-        if(!container) return;
-        container.innerHTML = '';
-        myReviews.slice().reverse().forEach(rev => {
-            container.innerHTML += `<div class="review-item">
-                <div style="color:#fcc419; font-size:20px;">${'★'.repeat(rev.stars)}${'☆'.repeat(5-rev.stars)}</div>
-                <p style="margin:5px 0; font-size:16px; font-weight:bold;">${rev.text}</p>
-                <div style="color:gray; font-size:13px; font-family:Arial;">Отзыв про #${rev.gardenNum} огород</div>
-            </div>`;
-        });
-    }
-
-    setInterval(() => {
-        let now = Date.now();
-        if (reviewQueue.length > 0 && now - lastReviewTime >= 7000) {
-            let rev = reviewQueue.shift();
-            myReviews.push(rev);
-            lastReviewTime = now;
-            if (document.getElementById('review-list-modal').style.display === 'block') { 
-                renderReviews(); 
-                unreadReviews = 0; 
-            } else { 
-                unreadReviews++; 
-            }
-            update();
-        }
-    }, 1000);
-
-    function tryAddReview(rev, gNum) {
-        if(godMode && rev.stars <= 2) return;
-        let now = Date.now();
-        if (reviewMessageCooldowns[rev.text] && (now - reviewMessageCooldowns[rev.text] < 30000)) return;
-        if (Math.random() < 0.25) {
-            reviewMessageCooldowns[rev.text] = now;
-            let finalRev = {...rev, gardenNum: gNum};
-            reviewQueue.push(finalRev);
-        }
-    }
-
-    function buy(id) {
-        let itm = itemDefs.find(x => x.id === id);
-        if (itm.s && secretPurchased) return;
-        if (money < itm.p) return;
+    if(type === 'fuga') {
+        hare.style.transition = 'transform 0.2s';
+        hare.style.transform = 'rotate(10deg) scale(0.9)';
         
-        money -= itm.p;
-
-        if (id === 'chef') {
-            addXP(5000000000);
-            showPop("BIG XP!", "gold");
-        } else if (id === 'coco') {
-            gardens[activeGardenIdx][id] = (gardens[activeGardenIdx][id] || 0) + 3;
-            setInterval(() => { money += 515; update(); showPop("+515", "#fcc419"); }, 1500);
-        } else if (id === 'loli') {
-            document.getElementById('rainbow-scr').style.display = 'block';
-            showPop("RAINBOW!", "violet");
-        } else if (id === 'halo') {
-            gardens[activeGardenIdx][id] = (gardens[activeGardenIdx][id] || 0) + 1;
-            setTimeout(() => { money += 100; update(); }, 230);
-        } else if (id === 'marsh') {
-            const o = document.getElementById('orange-scr');
-            o.style.display = 'flex'; o.classList.add('shake');
-            setTimeout(() => location.reload(), 1000);
-        } else if (itm.s) {
-            secretPurchased = true;
-            document.getElementById('tg-text').innerText = "Ты разблокировал доступ к ТГ каналу! Вбей в поиск «Grow A Garden With Trastratravich» Теперь ты сможешь следить за обновлениями игры. Да, это всё .-.";
-            openW('tg-modal');
-        } else {
-            gardens[activeGardenIdx][id] = (gardens[activeGardenIdx][id] || 0) + itm.amt;
-            if (Math.random() < 0.4) { addXP(30); showPop("+30 XP", "#a333c8"); }
-        }
-        update();
-    }
-
-    function upgradeAntenna() {
-        if (activeAntIdx !== null && money >= 350) {
-            money -= 350; antennas[activeAntIdx].income += 10;
-            document.getElementById('ant-val').innerText = antennas[activeAntIdx].income;
-            showPop("УЛУЧШЕНО!", "green"); update();
-        }
-    }
-
-    function exchangeAntenna() { if (money >= 500) { money -= 500; addXP(350); showPop("+350 XP", "#33e0ff"); update(); } }
-    
-    function tryBuyAntenna() { 
-        if(lvl < 5 || money < 1600) { 
-            document.getElementById('err-text').innerText = "Чтобы разблокировать доступ к этому предмету, в первую очередь вам нужно заработать 1600 монет, и 5 уровень. Приходи по-позже, щегол!";
-            openW('err-m'); 
-        } else { cls(); isPlacing = 'antenna'; document.getElementById('placement-hint').innerText = "Выберите своё местоположение, чтобы посадить антенну."; document.getElementById('placement-hint').style.display = 'block'; update(); } 
-    }
-    
-    function startGo(type) { 
-        if(isBanned) {
-            document.getElementById('err-text').innerText = "Извините, как так ваша репутация упала, нам пришлось забрать ваши права на приобретение новых садов. Вы больше не сможете владеть не единым садом.";
-            openW('err-m'); return;
-        }
-        if(money >= 500) { cls(); isPlacing = type || 'garden'; document.getElementById('placement-hint').innerText = "Выберите своё местоположение, чтобы начать выращивать сад."; document.getElementById('placement-hint').style.display='block'; } 
-    }
-    
-    function openW(id) { document.getElementById(id).style.display = 'block'; }
-    function cls() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); activeGardenIdx = null; activeAntIdx = null; }
-    function clsOne(id) { document.getElementById(id).style.display = 'none'; }
-
-    function startEnd() {
-        cls(); const screen = document.getElementById('game-screen'); const end = document.getElementById('ending');
-        screen.style.transition = 'opacity 5s'; screen.style.opacity = '0';
-        setTimeout(() => {
-            end.style.display = 'flex';
-            setTimeout(() => { end.style.opacity = '1'; }, 100);
-            let lines = ["Ого...", "Ты...", "Ты как это сделал?!", "Эм...", "Подожди, я без шуток.", "Я честно удивлён сильно, без шуток.", "...", "И ты действительно потратил столько часов на эту игру, и чтобы достигнуть своей цели...?", "У меня плохие новости, разуж ты сюда попал, дай расскажу.", "Это конец игры, я без шуток, за это не выдают награду, ты достиг своей цели и попал в тупик...", "THE END."];
-            let i = 0;
-            function showNext() { if (i < lines.length) { end.innerText = lines[i++]; setTimeout(showNext, 5000); } }
-            showNext();
-        }, 5000);
-    }
-
-    function startRobbery() {
-        if (gardenCount === 0 || isRobberyActive || godMode) return;
-        let potentialGardens = [];
-        gardens.forEach((g, idx) => {
-            let total = 0; Object.keys(g).forEach(k => { if(k !== 'id') total += g[k]; });
-            if(total > 0) potentialGardens.push(idx);
-        });
-        if(potentialGardens.length === 0) return;
-        robberyGardenIdx = potentialGardens[Math.floor(Math.random() * potentialGardens.length)];
-        isRobberyActive = true; robberyTimeLeft = 35;
-        document.getElementById('robbery-timer').innerText = robberyTimeLeft;
-        const alertBox = document.getElementById('robbery-alert');
-        const msg = document.getElementById('robbery-msg');
-        msg.innerText = `ПАРНИ КРАДУТ ВАШИ ФРУКТЫ, ОСТАНОВИТЕ ИХ (ПРОИСХОДЯЩЕЕ В #${robberyGardenIdx + 1} ОГОРОДЕ)`;
-        alertBox.style.display = 'block';
-        setTimeout(() => { alertBox.style.top = '20px'; }, 50);
+        let chargingBall = document.createElement('img');
+        chargingBall.src = 'https://i.ibb.co/d4RMBPsH/fuga-charge.png';
+        chargingBall.style.position = 'absolute';
+        chargingBall.style.left = '300px';
+        chargingBall.style.bottom = '30%';
+        chargingBall.style.width = '50px';
+        chargingBall.style.zIndex = '20000';
+        chargingBall.style.transition = 'all 0.1s linear';
+        document.getElementById('game-container').appendChild(chargingBall);
         
-        robberyTimerInterval = setInterval(() => {
-            robberyTimeLeft--;
-            document.getElementById('robbery-timer').innerText = robberyTimeLeft;
-            if(robberyTimeLeft <= 0) {
-                clearInterval(robberyTimerInterval);
-                const alertBox = document.getElementById('robbery-alert');
-                alertBox.style.transition = "top 1s ease-in";
-                alertBox.style.top = "-1000px";
-                setTimeout(() => {
-                    alertBox.style.display = 'none';
-                    alertBox.style.transition = "top 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)"; 
-                    stopRobbery(true);
-                    openW('rep-dead-m'); 
-                    finishGame();
-                }, 1000);
-            }
-        }, 1000);
-
-        robberyInterval = setInterval(() => {
-            let possibleItems = Object.keys(gardens[robberyGardenIdx]).filter(k => gardens[robberyGardenIdx][k] > 0);
-            if(possibleItems.length > 0) {
-                let randomItem = possibleItems[Math.floor(Math.random() * possibleItems.length)];
-                gardens[robberyGardenIdx][randomItem]--;
-                showPop("-1 Овощь/Фрукт", "red");
-                tryAddReview(badReviews[Math.floor(Math.random() * badReviews.length)], robberyGardenIdx + 1);
-                update();
-            } else { stopRobbery(); }
-        }, 1165);
-    }
-
-    function stopRobbery(isAuto = false) {
-        if(!isAuto) {
-            isRobberyActive = false;
-            clearInterval(robberyInterval); clearInterval(robberyTimerInterval);
-            const alertBox = document.getElementById('robbery-alert');
-            alertBox.style.top = '-400px';
-            setTimeout(() => { alertBox.style.display = 'none'; }, 500);
-            showPop("ОТБИТО!", "#82c91e");
-        } else {
-            isRobberyActive = false;
-            clearInterval(robberyInterval); clearInterval(robberyTimerInterval);
-        }
-        robberyGardenIdx = null; update();
-    }
-
-    function finishGame() {
-        isBanned = true;
-        gardens = []; gardenCount = 0;
-        document.querySelectorAll('.garden-plot').forEach(el => el.remove());
-        showPop("РЕПУТАЦИЯ 0", "red");
-        update();
-    }
-
-    setInterval(() => { if(Math.random() < 0.15) startRobbery(); }, 25000);
-
-    document.getElementById('game-screen').onclick = (e) => {
-        if (isPlacing && e.target.id === 'game-screen') {
-            if(isPlacing === 'garden') {
-                const currentIdx = gardenCount;
-                const g = document.createElement('div'); g.className = 'garden-plot';
-                g.style.left = e.clientX + 'px'; g.style.top = e.clientY + 'px';
-                g.innerHTML = '<span style="font-size:70px; filter:grayscale(1) brightness(0);">🌿</span>';
-                gardens[currentIdx] = { pom:0, ogur:0, arb:0, klub:0, vin:0, cher:0, tyk:0 };
-                itemDefs.forEach(itm => { 
-                    if(!itm.s && !itm.noAmt) { 
-                        setInterval(() => { 
-                            if (gardens[currentIdx][itm.id] > 0) { 
-                                gardens[currentIdx][itm.id]--; 
-                                money += itm.r; 
-                                showPop("+" + itm.r + " монет", "black", e.clientX, e.clientY); 
-                                if(!isRobberyActive || robberyGardenIdx !== currentIdx) {
-                                    if(goodReviews[itm.id]) tryAddReview(goodReviews[itm.id], currentIdx + 1);
+        let chargeTime = 0;
+        let chargeInterval = setInterval(() => {
+            chargeTime += 100;
+            let size = 50 + (chargeTime / 4000) * 150;
+            chargingBall.style.width = size + 'px';
+            if(chargeTime >= 4000) {
+                clearInterval(chargeInterval);
+                
+                hare.style.transform = 'rotate(0) scale(1)';
+                chargingBall.remove();
+                
+                let fugaBall = document.createElement('img');
+                fugaBall.src = 'https://i.ibb.co/d4RMBPsH/fuga-charge.png';
+                fugaBall.className = 'fuga-ball';
+                fugaBall.style.left = '350px';
+                fugaBall.style.bottom = '30%';
+                fugaBall.style.width = '200px';
+                document.getElementById('game-container').appendChild(fugaBall);
+                
+                let pos = 350;
+                let flyInterval = setInterval(() => {
+                    pos += 80;
+                    fugaBall.style.left = pos + 'px';
+                    if(pos > window.innerWidth + 200) { 
+                        clearInterval(flyInterval); 
+                        fugaBall.remove();
+                        
+                        let explosion = document.createElement('img');
+                        explosion.src = 'https://i.ibb.co/CKz1By6w/explosion.png';
+                        explosion.className = 'explosion-effect';
+                        explosion.style.left = (window.innerWidth - 200) + 'px';
+                        explosion.style.bottom = '30%';
+                        explosion.style.width = '50px';
+                        document.getElementById('game-container').appendChild(explosion);
+                        
+                        [...currentEnemies].forEach(e => {
+                            e.hp -= 50000;
+                            if(e.hp <= 0) {
+                                if(e.isBoss || e.isFinal) updateBossHP(e);
+                                else {
+                                    clearInterval(e.moveInterval);
+                                    if(e.el) e.el.remove();
+                                    const index = currentEnemies.indexOf(e);
+                                    if (index > -1) currentEnemies.splice(index, 1);
+                                    money += e.reward || 85;
+                                    enemiesLeft--;
                                 }
-                                update(); 
-                            } 
-                        }, itm.t); 
-                    } 
-                });
-                g.onclick = (ev) => { ev.stopPropagation(); activeGardenIdx = currentIdx; openW('store-m'); update(); };
-                document.getElementById('game-screen').appendChild(g);
-                money -= 500; gardenCount++; isPlacing = null;
-            } else if(isPlacing === 'antenna') {
-                const antIdx = antennaCount;
-                const a = document.createElement('div'); a.className = 'antenna-plot';
-                a.style.left = e.clientX + 'px'; a.style.top = e.clientY + 'px';
-                a.innerHTML = '<span style="font-size:70px;">📡</span>';
-                antennas[antIdx] = { income: 10 };
-                setInterval(() => { addXP(antennas[antIdx].income); showPop("+" + antennas[antIdx].income + " XP", "#33e0ff", e.clientX, e.clientY); }, 1000);
-                a.onclick = (ev) => { ev.stopPropagation(); activeAntIdx = antIdx; document.getElementById('ant-id').innerText = antIdx + 1; document.getElementById('ant-val').innerText = antennas[antIdx].income; openW('ant-income-m'); };
-                document.getElementById('game-screen').appendChild(a);
-                money -= 1600; antennaCount++; isPlacing = null;
+                            }
+                            if(!e.isBoss && !e.isFinal){
+                                let fill = e.el.querySelector('.zombie-hp-fill');
+                                if(fill) fill.style.width = (e.hp/e.maxHp)*100 + "%";
+                                let txt = e.el.querySelector('div[style*="top:3px"]');
+                                if(txt) txt.innerText = Math.max(0,Math.floor(e.hp)) + " ХП";
+                            } else {
+                                document.getElementById('boss-hp-fill').style.width = (e.hp/e.maxHp)*100 + "%";
+                                document.getElementById('boss-name-text').innerHTML = `${e.name} [${Math.floor(e.hp)}/${e.maxHp}]`;
+                            }
+                        });
+                        updateUI();
+                        if(currentEnemies.length === 0 && !bossActive && waveInProgress) endWave();
+                        
+                        setTimeout(() => {
+                            explosion.remove();
+                            let fire = document.createElement('img');
+                            fire.src = 'https://i.ibb.co/4RJQJvqM/fire.png';
+                            fire.className = 'fire-effect';
+                            fire.style.left = (window.innerWidth - 400) + 'px';
+                            fire.style.bottom = '30%';
+                            fire.style.width = '300px';
+                            document.getElementById('game-container').appendChild(fire);
+                            
+                            let fireDamage = 0;
+                            let fireInterval = setInterval(() => {
+                                fireDamage += 100;
+                                [...currentEnemies].forEach(e => {
+                                    e.hp -= 50;
+                                    if(e.hp <= 0) {
+                                        if(e.isBoss || e.isFinal) updateBossHP(e);
+                                        else {
+                                            clearInterval(e.moveInterval);
+                                            if(e.el) e.el.remove();
+                                            const index = currentEnemies.indexOf(e);
+                                            if (index > -1) currentEnemies.splice(index, 1);
+                                            money += e.reward || 85;
+                                            enemiesLeft--;
+                                        }
+                                    }
+                                    if(!e.isBoss && !e.isFinal){
+                                        let fill = e.el.querySelector('.zombie-hp-fill');
+                                        if(fill) fill.style.width = (e.hp/e.maxHp)*100 + "%";
+                                        let txt = e.el.querySelector('div[style*="top:3px"]');
+                                        if(txt) txt.innerText = Math.max(0,Math.floor(e.hp)) + " ХП";
+                                    } else {
+                                        document.getElementById('boss-hp-fill').style.width = (e.hp/e.maxHp)*100 + "%";
+                                        document.getElementById('boss-name-text').innerHTML = `${e.name} [${Math.floor(e.hp)}/${e.maxHp}]`;
+                                    }
+                                });
+                                updateUI();
+                                if(fireDamage >= 3000) {
+                                    clearInterval(fireInterval);
+                                    fire.remove();
+                                }
+                            }, 100);
+                        }, 200);
+                    }
+                }, 16);
             }
-            document.getElementById('placement-hint').style.display = 'none'; update();
+        }, 100);
+    }
+    
+    if(type === 'aura') {
+        hare.style.animation = 'dash 0.3s ease';
+        setTimeout(() => hare.style.animation = '', 300);
+        
+        let aura = document.createElement('img');
+        aura.src = 'https://i.ibb.co/NgRsPXgT/blue-aura.png';
+        aura.className = 'blue-aura-ball';
+        aura.style.left = '300px';
+        aura.style.bottom = '30%';
+        document.getElementById('game-container').appendChild(aura);
+        
+        setTimeout(() => {
+            aura.style.left = '350px';
+            let pos = 350;
+            let flyInterval = setInterval(() => {
+                pos += 50;
+                aura.style.left = pos + 'px';
+                if(pos > window.innerWidth + 200) { 
+                    clearInterval(flyInterval); 
+                    aura.remove(); 
+                }
+                
+                [...currentEnemies].forEach(e => {
+                    if(!e || !e.el) return;
+                    let er = e.el.getBoundingClientRect();
+                    let br = aura.getBoundingClientRect();
+                    if(br.right > er.left-50 && br.left < er.right+50 && br.top < er.bottom+50 && br.bottom > er.top-50) {
+                        e.hp -= 1200;
+                        if(e.hp <= 0) {
+                            if(e.isBoss || e.isFinal) updateBossHP(e);
+                            else {
+                                clearInterval(e.moveInterval);
+                                if(e.el) e.el.remove();
+                                const index = currentEnemies.indexOf(e);
+                                if (index > -1) currentEnemies.splice(index, 1);
+                                money += e.reward || 85;
+                                enemiesLeft--;
+                                updateUI();
+                                if(currentEnemies.length === 0 && !bossActive && waveInProgress) endWave();
+                            }
+                        }
+                        if(!e.isBoss && !e.isFinal){
+                            let fill = e.el.querySelector('.zombie-hp-fill');
+                            if(fill) fill.style.width = (e.hp/e.maxHp)*100 + "%";
+                            let txt = e.el.querySelector('div[style*="top:3px"]');
+                            if(txt) txt.innerText = Math.max(0,Math.floor(e.hp)) + " ХП";
+                        } else {
+                            document.getElementById('boss-hp-fill').style.width = (e.hp/e.maxHp)*100 + "%";
+                            document.getElementById('boss-name-text').innerHTML = `${e.name} [${Math.floor(e.hp)}/${e.maxHp}]`;
+                        }
+                    }
+                });
+            }, 16);
+        }, 200);
+    }
+}
+
+// --------------------------------------------------------------
+// 6. СТАРЫЕ СПОСОБНОСТИ SORCERER
+// --------------------------------------------------------------
+function castSorcererAbility(type) {
+    if((!isGameActive && !bossActive) || !isSorcerer) return;
+    let cd = document.getElementById('cd-'+type);
+    if(!cd || cd.style.height !== '0%' && cd.style.height !== '') return;
+    
+    cd.style.height = '100%';
+    let time = 15000;
+    let s = Date.now();
+    let int = setInterval(() => {
+        let e = Date.now() - s;
+        cd.style.height = Math.max(0, 100 - (e/time*100)) + '%';
+        if(e >= time) clearInterval(int);
+    }, 100);
+
+    let hare = mainHare;
+
+    if(type === 'red'){
+        setTimeout(() => {
+            document.getElementById('red-screen-overlay').style.background = 'rgba(255,0,0,0.7)';
+        }, 200);
+        
+        let ball = document.createElement('img');
+        ball.src = 'https://i.ibb.co/xqrHf7SM/red-ball.png';
+        ball.className = 'red-ball';
+        ball.style.left = '300px';
+        ball.style.bottom = '30%';
+        document.getElementById('game-container').appendChild(ball);
+        
+        setTimeout(() => {
+            let fly = setInterval(() => {
+                let left = parseInt(ball.style.left) || 300;
+                ball.style.left = (left + 60) + 'px';
+                if(left > window.innerWidth + 200) { clearInterval(fly); ball.remove(); }
+            }, 16);
+            
+            [...currentEnemies].forEach(e => { 
+                e.hp = 0; 
+                clearInterval(e.moveInterval);
+            });
+            
+            setTimeout(() => {
+                const nonBosses = currentEnemies.filter(e => !e.isBoss && !e.isFinal);
+                nonBosses.forEach(e => {
+                    if(e.el) e.el.remove();
+                    const index = currentEnemies.indexOf(e);
+                    if (index > -1) currentEnemies.splice(index, 1);
+                    enemiesLeft--;
+                });
+                currentEnemies.forEach(e => { if(e.hp <=0) updateBossHP(e); });
+                updateUI();
+                
+                if(currentEnemies.length === 0 && waveInProgress) {
+                    endWave();
+                }
+            }, 100);
+            
+            setTimeout(() => {
+                document.getElementById('red-screen-overlay').style.background = 'rgba(255,0,0,0)';
+            }, 200);
+        }, 2000);
+    }
+
+    if(type === 'blue'){
+        blueBallActive = true;
+        
+        hare.style.bottom = "45%";
+        setTimeout(() => {
+            hare.style.bottom = "25%";
+            
+            let ball = document.createElement('img');
+            ball.src = 'https://i.ibb.co/3yt8P5rx/blue-ball.png';
+            ball.className = 'blue-ball';
+            ball.style.left = '380px';
+            ball.style.bottom = '30%';
+            ball.style.width = '400px';
+            document.getElementById('game-container').appendChild(ball);
+            
+            let dmgInterval = setInterval(() => {
+                if(!blueBallActive) {
+                    clearInterval(dmgInterval);
+                    return;
+                }
+                [...currentEnemies].forEach(e => {
+                    if(!e.isBoss && !e.isFinal) {
+                        e.hp -= 1500;
+                        if(e.hp < 0) e.hp = 0;
+                        
+                        let fill = e.el.querySelector('.zombie-hp-fill');
+                        if(fill) fill.style.width = (e.hp/e.maxHp)*100 + "%";
+                        let txt = e.el.querySelector('div[style*="top:3px"]');
+                        if(txt) txt.innerText = Math.max(0,Math.floor(e.hp)) + " ХП";
+                        
+                        if(e.hp <= 0){
+                            clearInterval(e.moveInterval);
+                            if(e.el) e.el.remove();
+                            const index = currentEnemies.indexOf(e);
+                            if (index > -1) currentEnemies.splice(index, 1);
+                            money += e.reward; 
+                            enemiesLeft--;
+                            updateUI(); 
+                            
+                            if(currentEnemies.length === 0 && waveInProgress) {
+                                endWave();
+                            }
+                        }
+                    }
+                });
+            }, 100);
+            
+            setTimeout(() => {
+                blueBallActive = false;
+                clearInterval(dmgInterval);
+                ball.remove();
+            }, 15000);
+        }, 600);
+    }
+
+    if(type === 'infinity'){
+        window.infinityActive = true;
+        setTimeout(() => { window.infinityActive = false; }, 15000);
+    }
+}
+
+// --------------------------------------------------------------
+// 7. СИСТЕМА СТРЕЛЬБЫ
+// --------------------------------------------------------------
+function fireBullet() {
+    if(!isGameActive && !bossActive) return;
+    if(!canShoot) return;
+    
+    canShoot = false;
+    shootButton.classList.add('reloading');
+    
+    createBullet("main");
+    
+    setTimeout(() => {
+        canShoot = true;
+        shootButton.classList.remove('reloading');
+    }, 735);
+}
+
+function createBullet(t){
+    let b = document.createElement('img');
+    b.src = "https://i.ibb.co/Q70CBCKb/pulya.png";
+    b.className = 'bullet';
+    b.style.left = (t=="main"?"380px":"480px");
+    b.style.bottom = (t=="main"?"40%":"28%");
+    document.getElementById('game-container').appendChild(b);
+    let pos = (t=="main")? 380 : 480;
+    let bulletDamage = (t=="heli") ? 1000 : damage;
+    let interval = setInterval(() => {
+        pos += 40;
+        b.style.left = pos + "px";
+        
+        [...currentEnemies].forEach(e => {
+            if(!e || !e.el) return;
+            let er = e.el.getBoundingClientRect();
+            let br = b.getBoundingClientRect();
+            if(br.right > er.left-50 && br.left < er.right+50 && br.top < er.bottom+50 && br.bottom > er.top-50) {
+                e.hp -= bulletDamage;
+                if(e.hp < 0) e.hp = 0;
+                
+                if(!e.isBoss && !e.isFinal){
+                    let fill = e.el.querySelector('.zombie-hp-fill');
+                    if(fill) fill.style.width = (e.hp/e.maxHp)*100 + "%";
+                    let txt = e.el.querySelector('div[style*="top:3px"]');
+                    if(txt) txt.innerText = Math.max(0,Math.floor(e.hp)) + " ХП";
+                } else {
+                    document.getElementById('boss-hp-fill').style.width = (e.hp/e.maxHp)*100 + "%";
+                    document.getElementById('boss-name-text').innerHTML = `${e.name} [${Math.floor(e.hp)}/${e.maxHp}]`;
+                }
+                
+                if(e.hp <= 0){
+                    if(e.isBoss || e.isFinal) {
+                        updateBossHP(e);
+                    } else { 
+                        clearInterval(e.moveInterval);
+                        if(e.el) e.el.remove();
+                        const index = currentEnemies.indexOf(e);
+                        if (index > -1) currentEnemies.splice(index, 1);
+                        money += e.reward || 85; 
+                        enemiesLeft--;
+                        updateUI(); 
+                        
+                        if(currentEnemies.length === 0 && !bossActive && waveInProgress) {
+                            endWave();
+                        }
+                    }
+                }
+                
+                clearInterval(interval);
+                b.remove();
+            }
+        });
+        
+        if(pos > window.innerWidth + 200) { clearInterval(interval); b.remove(); }
+    }, 16);
+}
+
+// --------------------------------------------------------------
+// 8. ИГРОВАЯ ЛОГИКА
+// --------------------------------------------------------------
+function startBattle(){
+    if(waveInProgress) return;
+    if(wave >= 71){ startPurpBoss(); return; }
+    
+    waveInProgress = true;
+    isGameActive = true; 
+    
+    if(wave === 42 || wave === 70) {
+        enemiesLeft = 1;
+    } else {
+        enemiesLeft = 20;
+    }
+    
+    shootButton.style.display = 'flex';
+    
+    if(wave === 1) {
+        tutorialHint.style.display = 'block';
+    } else {
+        tutorialHint.style.display = 'none';
+    }
+    
+    toggleUI(false);
+    
+    if(activeCharacter === 'sorcerer') {
+        showSorcererAbilities();
+    } else if(activeCharacter === 'king') {
+        showKingAbilities();
+    }
+    
+    spawnEnemies();
+    
+    if(hasHeli && !heliInterval) {
+        heliInterval = setInterval(() => {
+            if(isGameActive || bossActive) {
+                createBullet("heli");
+            }
+        }, 735);
+    }
+}
+
+function spawnEnemies() {
+    let spawned = 0;
+    let interval = setInterval(() => {
+        if(!isGameActive || spawned >= enemiesLeft) { 
+            if(spawned >= enemiesLeft) clearInterval(interval);
+            return; 
         }
+        createEnemy();
+        spawned++;
+    }, 2000);
+}
+
+function toggleUI(show){
+    let op=show?"1":"0";
+    document.getElementById('side-ui').style.opacity=op;
+    document.getElementById('wave-ui').style.opacity=op;
+    document.getElementById('start-btn-ui').style.opacity=op;
+    document.getElementById('start-btn-ui').style.pointerEvents=show?"auto":"none";
+    
+    if(show){
+        shootButton.style.display = 'none';
+        tutorialHint.style.display = 'none';
+        document.getElementById('main-header').style.top = '15px';
+        waveInProgress = false;
+        
+        hideAbilities();
+        
+        if(heliInterval) {
+            clearInterval(heliInterval);
+            heliInterval = null;
+        }
+    } else {
+        if(bossActive) document.getElementById('main-header').style.top = '80px';
+    }
+}
+
+function createEnemy(){
+    let pool = enemyData.filter(e=>wave >= e.start && wave < e.end);
+    if (wave === 42) pool = [enemyData.find(e => e.name === "The Nameless Hare")];
+    if (wave === 70) pool = [enemyData.find(e => e.name === "Agetha Hare")];
+
+    let type = pool[Math.floor(Math.random()*pool.length)];
+    let c=document.createElement('div');
+    c.className='zombie-container';
+    
+    if(type.isBoss || type.isFinal){
+        c.innerHTML=`
+            <div class="zombie-name" style="color:gold;">${type.name}</div>
+            <img src="${type.img}" style="width:100%; ${type.isBoss?'transform:scale(1.3);':''}" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer">
+        `;
+    } else {
+        c.innerHTML=`
+            <div class="zombie-name">${type.name}</div>
+            <div class="zombie-hp-bar">
+                <div class="zombie-hp-fill" style="width:100%"></div>
+                <div style="position:absolute;width:100%;text-align:center;color:#fff;font-size:20px;top:3px;left:0;font-weight:900;text-shadow:1px 1px #000;">${type.hp} ХП</div>
+            </div>
+            <img src="${type.img}" style="width:100%" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer">
+        `;
+    }
+    document.getElementById('game-container').appendChild(c);
+    let obj={
+        el:c, 
+        hp:type.hp, 
+        maxHp:type.hp, 
+        dmg:type.dmg, 
+        speed:type.speedVal, 
+        pos:-500, 
+        isBoss:type.isBoss||false, 
+        isFinal:type.isFinal||false, 
+        name:type.name,
+        reward:type.reward || 85,
+        hasDamaged:false,
+        moveInterval:null
     };
-
-    /* --- МОД МЕНЮ ЛОГИКА --- */
-    let modIsDragging = false, modMoveDetect = false, modOffX, modOffY;
-    const modBtn = document.getElementById('mod-menu-btn');
-    const modPanel = document.getElementById('mod-menu-panel');
-
-    function modStartDrag(e) {
-        modIsDragging = true; modMoveDetect = false;
-        const touch = e.touches ? e.touches[0] : e;
-        modOffX = touch.clientX - modBtn.offsetLeft;
-        modOffY = touch.clientY - modBtn.offsetTop;
+    
+    if(type.isBoss||type.isFinal){ 
+        setupBossUI(type); 
+        obj.pos = -600; 
+        if(type.name=='The Nameless Hare') document.getElementById('red-screen-overlay').style.background = 'rgba(255,0,0,0.3)';
     }
+    currentEnemies.push(obj);
+    startMoving(obj);
+}
 
-    document.addEventListener('mousemove', (e) => { if (modIsDragging) { modMoveDetect = true; modBtn.style.left = (e.clientX - modOffX) + 'px'; modBtn.style.top = (e.clientY - modOffY) + 'px'; modBtn.style.right = 'auto'; } });
-    document.addEventListener('touchmove', (e) => { if (modIsDragging) { modMoveDetect = true; const touch = e.touches[0]; modBtn.style.left = (touch.clientX - modOffX) + 'px'; modBtn.style.top = (touch.clientY - modOffY) + 'px'; modBtn.style.right = 'auto'; } });
-    document.addEventListener('mouseup', () => { if (modIsDragging && !modMoveDetect) { modPanel.style.display = 'block'; } modIsDragging = false; });
-    document.addEventListener('touchend', () => { if (modIsDragging && !modMoveDetect) { modPanel.style.display = 'block'; } modIsDragging = false; });
-
-    function modMoney() { money = 1000000000; update(); showPop("1B COINS!", "#00ff00"); }
-    function modLevel() { lvl = 99999999; update(); showPop("MAX LVL!", "#a333c8"); }
-    function modGodMode() { godMode = true; showPop("GOD MODE ON", "gold"); }
-    function modAllItems() {
-        if(gardenCount === 0) return showPop("BUY GARDEN!", "red");
-        gardens.forEach(g => { itemDefs.forEach(itm => { if(!itm.s) g[itm.id] = 999; }); });
-        update(); showPop("ITEMS ADDED", "#00ff00");
-    }
-    function modPlace5() {
-        for(let i=0; i<5; i++) {
-            const idx = gardenCount;
-            const g = document.createElement('div'); g.className = 'garden-plot';
-            g.style.left = (100 + (i*140)) + 'px'; g.style.top = '30%';
-            g.innerHTML = '<span style="font-size:70px; filter:grayscale(1) brightness(0);">🌿</span>';
-            gardens[idx] = { pom:0, ogur:0, arb:0, klub:0, vin:0, cher:0, tyk:0 };
-            itemDefs.forEach(itm => { if(!itm.s) { setInterval(() => { if (gardens[idx][itm.id] > 0) { gardens[idx][itm.id]--; money += itm.r; update(); } }, itm.t); } });
-            g.onclick = (ev) => { ev.stopPropagation(); activeGardenIdx = idx; openW('store-m'); update(); };
-            document.getElementById('game-screen').appendChild(g);
-            gardenCount++;
+function startMoving(o){
+    if(!o) return;
+    
+    let baseSpeed = (window.innerWidth / (o.speed * 60));
+    o.moveInterval = setInterval(() => {
+        if(!o || !o.el || (!isGameActive && !bossActive)) { 
+            clearInterval(o.moveInterval); 
+            return; 
         }
-        update(); showPop("5 GARDENS PLACED", "#82c91e");
-    }
-    function modSendAnn() {
-        const txt = document.getElementById('mod-ann-input').value;
-        if(!txt) return;
-        const box = document.getElementById('visual-ann-box');
-        document.getElementById('visual-ann-text').innerText = txt;
-        box.classList.add('active');
-        setTimeout(() => box.classList.remove('active'), 5000);
-    }
-    function modClearInv() { gardens.forEach(g => { itemDefs.forEach(itm => { if(!itm.s) g[itm.id] = 0; }); }); update(); showPop("INV CLEARED", "white"); }
-    function modResetGame() { document.querySelectorAll('.garden-plot, .antenna-plot').forEach(el => el.remove()); gardens = []; gardenCount = 0; antennas = []; antennaCount = 0; update(); showPop("GAME RESET", "red"); }
-    function modSchenoriy() { startEnd(); }
+        
+        let step = baseSpeed;
+        if(window.infinityActive){
+            let dist = window.innerWidth - o.pos - 500;
+            if(dist < 600) step *= 0.1;
+            if(dist < 300) step = 0;
+        }
+        
+        if(blueBallActive) {
+            let ballElement = document.querySelector('.blue-ball');
+            if(ballElement && !o.isBoss && !o.isFinal) {
+                let ballRect = ballElement.getBoundingClientRect();
+                let enemyRect = o.el.getBoundingClientRect();
+                if(Math.abs(enemyRect.left - ballRect.left) < 600) {
+                    if(enemyRect.left > ballRect.left) o.pos -= 4;
+                    else o.pos += 3;
+                }
+            }
+        }
+        
+        o.pos += step;
+        if(o.el) o.el.style.right = o.pos + "px";
+        
+        if(!o.hasDamaged && o.el) {
+            let rect = o.el.getBoundingClientRect();
+            if(rect.left < 120) {
+                if(!isCurse) hp -= o.dmg;
+                updateUI();
+                o.hasDamaged = true;
+                
+                clearInterval(o.moveInterval);
+                
+                if(o.el) o.el.remove();
+                
+                const index = currentEnemies.indexOf(o);
+                if (index > -1) currentEnemies.splice(index, 1);
+                
+                if(!o.isBoss && !o.isFinal) {
+                    enemiesLeft--;
+                }
+                
+                if(currentEnemies.length === 0 && !bossActive && waveInProgress) {
+                    endWave();
+                }
+                
+                if(hp <= 0) gameOver();
+            }
+        }
+        
+        if(o.isBoss && o.name=='Agetha Hare' && o.el){
+            let rect = o.el.getBoundingClientRect();
+            let dist = Math.max(0, rect.left - 100);
+            let blur = Math.min(10, 2000 / (dist+1));
+            document.getElementById('game-container').style.filter = `blur(${blur}px)`;
+        }
+    }, 16);
+}
 
-    function modAdminFruits() {
-        itemDefs.push(
-            {id:'chef', n:'👨🏿‍🍳', p:5000000, e:'👨🏿‍🍳', noAmt: true},
-            {id:'coco', n:'Пальмя Кокосов', p:1500, e:'🥥', noAmt: true},
-            {id:'loli', n:'Some Lolipop', p:1, e:'🍭', noAmt: true},
-            {id:'halo', n:'Халопенье', p:120, e:'🌶', noAmt: true},
-            {id:'marsh', n:'Маршмеллоу', p:98500, e:'🍢', noAmt: true}
-        );
-        showPop("ADMIN FRUITS ADDED!", "red"); update();
+function setupBossUI(t){
+    bossActive = true;
+    let g = document.getElementById('boss-ui-global');
+    g.style.display = "flex";
+    g.style.opacity = "1";
+    document.getElementById('boss-name-text').innerText = t.name + " ["+t.hp+" ХП]";
+    document.getElementById('boss-hp-fill').style.width = "100%";
+    if(t.name.includes("The Nameless Hare")){
+        document.getElementById('red-screen-overlay').style.background = 'rgba(255,0,0,0.3)';
     }
+    document.getElementById('main-header').style.top = '80px';
+    updateUI();
+}
 
-    update();
+function updateBossHP(en){
+    if(en.hp <= 0){
+        if(en.isFinal){
+            bossActive = false; waveInProgress = false;
+            document.getElementById('boss-ui-global').style.opacity = "0";
+            let p = en.el;
+            p.style.animation = "none";
+            p.style.transition = "all 1s";
+            p.style.top = "60%";
+            setTimeout(() => {
+                p.style.animation = "shake .1s infinite";
+                showSub("Пурпулезка","ТЫ СЧИТЕРИЛ! И Я ПРЕКРАСНО МОГУ ЭТО УВИДЕТЬ ПО ТВОЕМУ ХЛЕБАЛЬНИКУ!",4000);
+                setTimeout(() => {
+                    showSub("Пурпулезка","В СЛЕДУЮЩИЙ РАЗ, КОГДА БУДЕШЬ СПРАШИВАТЬ У СВОЕЙ МАМЫ КТО БОГ, ТО СКАЖИ ЕЙ МОЁ ИМЯЯЯЯ!",4000);
+                    setTimeout(() => {
+                        p.style.transform = "scale(1.5) rotate(-20deg)";
+                        p.style.animation = "shake .05s infinite";
+                        let f = document.getElementById('white-flash');
+                        f.style.display = "block";
+                        setTimeout(() => f.style.opacity = "1", 1000);
+                        setTimeout(runEndCredits, 3000);
+                    }, 4500);
+                }, 4500);
+            }, 1000);
+        } else {
+            if(bossBlurInterval) clearInterval(bossBlurInterval);
+            document.getElementById('red-screen-overlay').style.background = 'rgba(255,0,0,0)';
+            document.getElementById('game-container').style.filter = 'none';
+            clearInterval(en.moveInterval);
+            
+            money += en.reward || 3800;
+            updateUI();
+            
+            if(en.el) en.el.remove();
+            const index = currentEnemies.indexOf(en);
+            if (index > -1) currentEnemies.splice(index, 1);
+            
+            document.getElementById('boss-ui-global').style.opacity = '0';
+            setTimeout(() => document.getElementById('boss-ui-global').style.display = 'none', 400);
+            document.getElementById('main-header').style.top = '15px';
+            
+            if(currentEnemies.length === 0 && waveInProgress) {
+                endWave();
+            }
+        }
+    }
+}
+
+// ---------- БИТВА С ПУРПУЛЕЗКОЙ ----------
+function startPurpBoss(){
+    bossActive = true; waveInProgress = true;
+    toggleUI(false);
+    document.getElementById('purp-timer').style.display = 'block';
+    shootButton.style.display = 'flex';
+    purpTimer = 100;
+    let p = enemyData.find(e => e.isFinal);
+    let c = document.createElement('div');
+    c.className='zombie-container'; c.id='final-purp';
+    c.style.right = "80px"; c.style.bottom = "15%";
+    c.style.width = "520px";
+    c.style.animation = "floatPurp 4s infinite ease-in-out";
+    c.innerHTML = `<div class="zombie-name" style="color:gold;">${p.name}</div><img src="${p.img}" style="width:100%" crossorigin="anonymous" loading="lazy" referrerpolicy="no-referrer">`;
+    document.getElementById('game-container').appendChild(c);
+    let obj = {el:c, hp:p.hp, maxHp:p.hp, isBoss:true, isFinal:true, dmg:p.finalDmg, name:p.name, reward:3800};
+    currentEnemies.push(obj); setupBossUI(p);
+    showSub("Пурпулезка","ХАХА! СЮРПРИЗ! ДУМАЛ, ЧТО УНИЧТОЖИТЬ МОИХ ЗАЙЦЕВ БЫЛО ЛУЧШЕЕ РЕШЕНИЕ?",6000);
+    setTimeout(() => showSub("Пурпулезка","ХАХ! ИДИОТ! НАОБОРОТ ХУЖЕ! НО РАЗ МЫ ВСТРЕТИЛИСЬ, ДУМАЮ, МНЕ СТОИТ ЧЕРЕЗ 100 СЕКУНД РАЗВАЛИТЬ ТВОЮ КАБИНУ! ДАЮ ТЕБЕ РОВНО 100 СЕКУНД, ЧТОБЫ ТЫ СДЕЛАЛ СВОИ ПОСЛЕДНИЕ ВДОХИ. ПОЭТОМУ УДАЧИ, ЧТОБЫ УМЕРЕТЬ!",6000),7000);
+    
+    let cloneInterval = setInterval(() => { if(!bossActive) { clearInterval(cloneInterval); return; } throwPurpClone(); }, 10000);
+    let timerInterval = setInterval(() => {
+        if(!bossActive) { clearInterval(timerInterval); document.getElementById('purp-timer').style.display='none'; return; }
+        purpTimer--;
+        document.getElementById('purp-timer').innerText = `⏳ ${purpTimer}`;
+        if(purpTimer <= 0) { clearInterval(timerInterval); purpKillPlayer(); }
+        if(obj.hp <= 0) { clearInterval(timerInterval); updateBossHP(obj); }
+    }, 1000);
+}
+
+function throwPurpClone(){
+    let cl = document.createElement('img');
+    cl.src = "https://i.ibb.co/wZS6FJrz/purpulezka.png";
+    cl.style.position = "fixed"; cl.style.right = "200px"; cl.style.top = "200px"; cl.style.width = "80px";
+    cl.style.transition = "all .8s ease-in"; cl.style.zIndex = "500";
+    cl.crossOrigin = "anonymous"; cl.loading = "lazy"; cl.referrerPolicy = "no-referrer";
+    document.body.appendChild(cl);
+    setTimeout(()=>{
+        cl.style.right = "85%"; cl.style.top = "60%";
+        setTimeout(()=>{ if(!isCurse) hp -= 10; updateUI(); cl.remove(); },800);
+    },100);
+}
+
+function purpKillPlayer(){
+    showSub("Пурпулезка","ОЙ! А КТО-ТО КАЖЕТСЯ ПРОИГРАЛ! ПОРА БЫ СЛОМАТЬ КАБИНУ!",4000);
+    setTimeout(()=>{
+        let p = document.getElementById('final-purp');
+        if(p) { p.style.transition = "right .5s"; p.style.right = "40%"; }
+        setTimeout(()=>{ hp = 0; updateUI(); gameOver(); },600);
+    },4500);
+}
+
+function runEndCredits(){
+    let b=document.getElementById('final-credits');
+    b.style.display="flex";
+    const l=["Эй...","Не уходи...","О!","Я думал, что потерял тебя...","Слушай...","Я хочу тебя предупредить...","Они уже здесь, и идут за тобой...","Тебе надо скатываться..."];
+    let i=0;
+    function n(){
+        if(i<l.length){
+            let p=document.createElement('div');
+            p.className='credit-line';p.innerText=l[i];
+            b.appendChild(p);
+            setTimeout(()=>p.style.opacity=1,100);
+            setTimeout(()=>{p.style.opacity=0;i++;setTimeout(n,1000);},3000);
+        }else{
+            b.innerHTML+=`
+                <h1 class="credit-line" style="opacity:1;font-size:100px">THE END</h1>
+                <p class="credit-line" style="opacity:1;font-size:30px">Спасибо За Игру! Игра была создана пользователем: @Xn1ckname.</p>
+                <p class="credit-line good-end" style="opacity:1;animation:glowGreen 1s infinite alternate">Хорошая Концовка.</p>
+            `;
+            setTimeout(()=>{b.style.background="black";b.innerHTML="";},19000);
+            setTimeout(()=>location.reload(),22000);
+        }
+    }
+    n();
+}
+
+function showSub(n,t,d){
+    let box=document.getElementById('subtitle-box');
+    document.getElementById('sub-name').innerText=n;
+    document.getElementById('sub-text').innerText=t;
+    box.style.display="block";
+    setTimeout(()=>box.classList.add('active'),100);
+    setTimeout(()=>{box.classList.remove('active');setTimeout(()=>box.style.display="none",500);},d);
+}
+
+function gameOver(){
+    isGameActive=false; bossActive=false; waveInProgress=false;
+    tutorialHint.style.display='none';
+    document.getElementById('lose-screen').style.display="flex";
+    document.getElementById('purp-timer').style.display='none';
+    document.getElementById('boss-ui-global').style.opacity='0';
+    document.getElementById('red-screen-overlay').style.background='rgba(255,0,0,0)';
+    document.getElementById('game-container').style.filter='none';
+    document.getElementById('main-header').style.top = '15px';
+    shootButton.style.display = 'none';
+    
+    hideAbilities();
+    
+    if(heliInterval) {
+        clearInterval(heliInterval);
+        heliInterval = null;
+    }
+}
+
+function respawn(){
+    hp=maxHp; updateUI();
+    document.getElementById('lose-screen').style.display="none";
+    toggleUI(true);
+    currentEnemies.forEach(e => {
+        clearInterval(e.moveInterval);
+        if(e.el) e.el.remove();
+    });
+    currentEnemies = [];
+}
+
+// ---------- МАГАЗИН ----------
+function openShop(){document.getElementById('shop-overlay').style.display='flex';}
+function closeShop(){document.getElementById('shop-overlay').style.display='none';}
+
+function buyHeli(){
+    if(money>=10000 && !hasHeli){
+        money-=10000; hasHeli=true;
+        document.getElementById('heli-hare').style.display='block';
+        let div = document.createElement('div');
+        div.className = 'heli-purchase';
+        div.innerHTML = 'Вы успешно приобрёли Верто-Зайца, теперь он на вашей стороне.<br><button onclick="this.parentElement.remove()">Ок.</button>';
+        document.body.appendChild(div);
+        
+        if(isGameActive || bossActive) {
+            heliInterval = setInterval(() => {
+                createBullet("heli");
+            }, 735);
+        }
+        
+        updateUI();
+    }
+}
+
+function buyAmmo(){
+    if(money>=ammoPrice){
+        money-=ammoPrice; damage+=30; ammoPrice+=100;
+        let notify = document.createElement('div');
+        notify.className = 'damage-notify';
+        notify.innerText = 'УЛУЧШЕНО! +30 Урона.';
+        document.body.appendChild(notify);
+        setTimeout(() => { notify.style.opacity = '1'; notify.style.transform = 'translateX(-50%) translateY(-30px)'; }, 10);
+        setTimeout(() => { notify.style.opacity = '0'; notify.style.transform = 'translateX(-50%) translateY(-80px)'; setTimeout(()=>notify.remove(), 2000); }, 2000);
+        document.getElementById('ammo-price-text').innerText = ammoPrice + " Монет";
+        updateUI();
+    }
+}
+
+// ---------- ADMIN ----------
+function startAdminTimer(){ adminTimer = setTimeout(() => { document.getElementById('admin-notify').style.display = 'flex'; }, 5000); }
+function clearAdminTimer(){ clearTimeout(adminTimer); }
+document.getElementById('admin-notify-ok').onclick = () => {
+    document.getElementById('admin-notify').style.display = 'none';
+    document.getElementById('admin-trigger').style.display = 'flex';
+};
+document.getElementById('admin-trigger').onclick = () => {
+    let menu = document.getElementById('admin-menu');
+    menu.style.display = 'flex';
+    setTimeout(() => menu.classList.add('show'), 10);
+};
+
+function addMoneyAdmin(){money+=100000;updateUI();}
+function toggleCurse(){isCurse=!isCurse;maxHp=isCurse?999999999999:350;hp=maxHp;updateUI();}
+
+function skipWaveAdmin(){
+    currentEnemies.forEach(e => {
+        clearInterval(e.moveInterval);
+        if(e.el) e.el.remove();
+    });
+    currentEnemies = [];
+    enemiesLeft = 0;
+    
+    let notify = document.createElement('div');
+    notify.className = 'admin-notify-blue';
+    notify.innerText = 'Пропущена Волна.';
+    document.body.appendChild(notify);
+    setTimeout(() => { notify.style.opacity = '1'; notify.style.transform = 'translateX(-50%) translateY(-30px)'; }, 10);
+    setTimeout(() => { 
+        notify.style.opacity = '0'; 
+        notify.style.transform = 'translateX(-50%) translateY(-80px)'; 
+        setTimeout(() => notify.remove(), 2000); 
+    }, 2000);
+    
+    endWave();
+}
+
+updateUI();
 </script>
 </body>
 </html>
